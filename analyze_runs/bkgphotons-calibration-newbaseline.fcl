@@ -1,0 +1,156 @@
+#include "services_common_icarus.fcl"
+#include "services_common_icarus.fcl"
+#include "channelmapping_icarus.fcl"
+#include "decoderdefs_icarus.fcl"
+#include "icarus_ophitfinder.fcl"
+#include "icarus_flashfinder.fcl"
+#include "pmt-calibration.fcl"
+#include "icarus_opana_modules.fcl"
+
+process_name: BkgphotonsCalibration
+
+services:
+{
+   TFileService:            { fileName: "%ifb_%tc-%p.root" }
+   @table::icarus_geometry_services
+   @table::icarus_basic_services
+   IICARUSChannelMap: @local::icarus_channelmappinggservice
+}
+
+services.IICARUSChannelMap.ChannelMappingTool: @local::ChannelMappingPostGres
+
+services.DetectorClocksService.DefaultBeamTime: 0
+services.DetectorClocksService.DefaultTrigTime: 0
+services.DetectorClocksService.InheritClockConfig: false
+
+services.Geometry.Name: icarus_v2
+
+#Look at the input files
+source:
+{
+  module_type: RootInput
+  fileNames:  [ "data.root" ]
+  maxEvents:   -1       # Number of events to create
+}
+
+# Make sure to get rid of NuRandomSvc (not thread save)
+services.NuRandomService: @erase
+
+physics:
+{
+
+    // now also have something produce the digits and headers
+    producers:
+    {
+
+        #PMTconfig: @local::extractPMTconfig 
+
+	#daqTrigger: @local::decodeTrigger
+
+        daqPMT: @local::decodePMT
+
+	#daqPMTSpareChannel: @local::decodePMTSpareChannel
+
+        ophit: @local::icarus_ophit_data
+
+        opflashCryoE: @local::ICARUSSimpleFlashDataCryoE
+
+        opflashCryoW: @local::ICARUSSimpleFlashDataCryoW
+
+    }
+
+    analyzers: 
+    {
+	laserCalibration: @local::pmt_laser_calibration
+
+        simpleLightAna: @local::ICARUSFlashAssAna
+
+    	bkgcalibration: @local::pmt_bkgphotons_calibration 
+    }
+
+    my_producer_modules: [ daqPMT, ophit, opflashCryoE, opflashCryoW ]
+
+    ana: [  simpleLightAna, bkgcalibration ]
+
+    end_paths: [ana]
+}
+
+
+
+
+
+
+physics.producers.daqPMT.TriggerTag:   @erase 
+physics.producers.daqPMT.PMTconfigTag: @erase # required
+
+# Decoder tool -light
+physics.producers.daqPMT.SurviveExceptions: true
+physics.producers.daqPMT.DiagnosticOutput:  false
+physics.producers.daqPMT.PacketDump:        false
+physics.producers.daqPMT.RequireKnownBoards: false
+physics.producers.daqPMT.RequireBoardConfig: false
+physics.producers.daqPMT.DataTrees: [ "PMTfragments" ]
+
+
+# Pedestal configuration
+physics.producers.ophit.PedAlgoPset.Name: "RollingMean"
+physics.producers.ophit.PedAlgoPset.SampleSize:  20
+physics.producers.ophit.PedAlgoPset.Threshold:   1.5
+physics.producers.ophit.PedAlgoPset.MaxSigma:    5
+physics.producers.ophit.PedAlgoPset.PedRangeMax: 16000
+physics.producers.ophit.PedAlgoPset.PedRangeMin: 14000
+physics.producers.ophit.PedAlgoPset.DiffADCCounts: 2
+physics.producers.ophit.PedAlgoPset.DiffBetweenGapsThreshold: 2
+physics.producers.ophit.PedAlgoPset.Verbosity: true
+
+# OpHit configuration
+physics.producers.ophit.HitAlgoPset.ADCThreshold: 10
+physics.producers.ophit.HitAlgoPset.EndADCThreshold: 2
+physics.producers.ophit.HitAlgoPset.EndNSigmaThreshold: 1
+physics.producers.ophit.HitAlgoPset.MinPulseWidth: 5
+physics.producers.ophit.HitAlgoPset.NSigmaThreshold: 3
+physics.producers.ophit.HitAlgoPset.Name: "SlidingWindow"
+physics.producers.ophit.HitAlgoPset.NumPostSample: 10
+physics.producers.ophit.HitAlgoPset.NumPreSample: 5
+physics.producers.ophit.HitAlgoPset.PositivePolarity: false
+physics.producers.ophit.HitAlgoPset.TailADCThreshold: 6
+physics.producers.ophit.HitAlgoPset.TailNSigmaThreshold: 2
+physics.producers.ophit.HitAlgoPset.Verbosity: false
+physics.producers.ophit.AreaToPE: true
+physics.producers.ophit.ChannelMasks: []
+physics.producers.ophit.SPEArea: 157
+physics.producers.ophit.SPEShift: 0
+physics.producers.ophit.UseStartTime: true
+  
+# OpFlash configuration
+# -- East 
+physics.producers.opflashCryoE.AlgoConfig.DebugMode: false
+physics.producers.opflashCryoE.AlgoConfig.HitVetoRangeEnd: []
+physics.producers.opflashCryoE.AlgoConfig.HitVetoRangeStart: []
+physics.producers.opflashCryoE.AlgoConfig.IntegralTime: 1
+physics.producers.opflashCryoE.AlgoConfig.MinMultCoinc: 5
+physics.producers.opflashCryoE.AlgoConfig.MinPECoinc: 50
+physics.producers.opflashCryoE.AlgoConfig.OpChannelRange: [0, 179]
+physics.producers.opflashCryoE.AlgoConfig.PEThreshold: 50
+physics.producers.opflashCryoE.AlgoConfig.PEThresholdHit: 1
+physics.producers.opflashCryoE.AlgoConfig.PreSample: 2e-2
+physics.producers.opflashCryoE.AlgoConfig.TimeResolution: 1e-2
+physics.producers.opflashCryoE.AlgoConfig.VetoSize: 1
+physics.producers.opflashCryoE.PECalib.SPEAreaGain: 157  #212
+physics.producers.opflashCryoE.PECalib.SPEAreaGainList: []
+
+# -- West
+physics.producers.opflashCryoW.AlgoConfig.DebugMode: false
+physics.producers.opflashCryoW.AlgoConfig.HitVetoRangeEnd: []
+physics.producers.opflashCryoW.AlgoConfig.HitVetoRangeStart: []
+physics.producers.opflashCryoW.AlgoConfig.IntegralTime: 1
+physics.producers.opflashCryoW.AlgoConfig.MinMultCoinc: 5
+physics.producers.opflashCryoW.AlgoConfig.MinPECoinc: 50
+physics.producers.opflashCryoW.AlgoConfig.OpChannelRange: [180, 359]
+physics.producers.opflashCryoW.AlgoConfig.PEThreshold: 50
+physics.producers.opflashCryoW.AlgoConfig.PEThresholdHit: 1
+physics.producers.opflashCryoW.AlgoConfig.PreSample: 2e-2
+physics.producers.opflashCryoW.AlgoConfig.TimeResolution: 1e-2
+physics.producers.opflashCryoW.AlgoConfig.VetoSize: 1
+physics.producers.opflashCryoW.PECalib.SPEAreaGain: 157 #212
+physics.producers.opflashCryoW.PECalib.SPEAreaGainList: []
