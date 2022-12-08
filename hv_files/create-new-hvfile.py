@@ -4,7 +4,8 @@ import sys, os
 def writeHVFile( offset, oldfilename, newfilename, copyToSever=False ):
 
 		nfp = open(newfilename, "w")
-
+		offPMTs = []
+	
 		for line in open(oldfilename , "r"):
 
 			buff = line.split(",")
@@ -30,6 +31,7 @@ def writeHVFile( offset, oldfilename, newfilename, copyToSever=False ):
 					print( "WARNING: PMT {} is off, stays off!".format(pmtID) )
 					line = ",".join(buff)
 					nfp.write(line)
+					offPMTs.append(pmtID)	
 					continue
 				
 				# Cap values over 2100 V
@@ -58,6 +60,11 @@ def writeHVFile( offset, oldfilename, newfilename, copyToSever=False ):
 
 		print( "Create new file {}".format(newfilename) )
 		nfp.close()			
+
+		with open("offPMTs.txt","w") as f:
+			for item in offPMTs:
+				f.write("%s\n" % item)
+		
 
 		# Copy to remote server and remove the .current file
 		if copyToSever:
