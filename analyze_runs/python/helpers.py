@@ -114,7 +114,7 @@ def getMostRecentCalibration( sourcedir = "../calibrationdb/", timeseries=False 
 ############################### DATA IMPORTER FUNCTION ###############################
 
 def dataLoader( sourcedir = "../calibrationdb/", 
-                voltage_file="../../gain/hvdb/Sy4527channels_15112021_nominal.sub", 
+                voltage_file="../../hv_files/Sy4527channels_Dec2022_nominal.sub", 
                 interval=(1610067905, 1637788392), 
                 adders=0.1 ):
         
