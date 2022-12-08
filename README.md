@@ -29,8 +29,9 @@ Setup a python environment
 ```
 python3 -m venv env
 ```
-*do `source env/bin/activate`
-*finally `python -m pip install -r requirement.txt
+* do `source env/bin/activate`
+
+* finally `python -m pip install -r requirement.txt
 
 Try then to connect jupyter notebook:
 * open tunnel with port forwarding:
