@@ -79,6 +79,11 @@ physics.producers.daqTrigger.DecoderTool.TrigConfigLabel: triggerconfig
 physics.producers.daqPMT.PMTconfigTag: pmtconfig  # required
 physics.producers.daqPMT.TriggerTag:   daqTrigger # required
 
+# workaround for the configurations where the trigger vero is not set
+physics.producers.daqTrigger.DecoderTool.TrigConfigLabel: ""
+physics.producers.triggerconfig.module_type: DummyProducer
+
+
 physics.producers.ophit.PedAlgoPset.PedRangeMax: 18000
 physics.producers.ophit.PedAlgoPset.PedRangeMin: 12000
 
