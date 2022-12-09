@@ -18,7 +18,7 @@ def readSqlitedb(database="/cvmfs/icarus.opensciencegrid.org/products/icarus/ica
 
     return df
 
-def convertChtoPMTid(channels):
+def channel_to_PMTid(channels):
     
     geo = readSqlitedb()
     
@@ -28,6 +28,17 @@ def convertChtoPMTid(channels):
     else:
         pmt_ids = [ geo[geo.channel_id==ch].pmt_id.values[0] for ch in channels ] 
         return pmt_ids
+    
+def PMTid_to_channel(pmt_ids):
+    
+    geo = readSqlitedb()
+    
+    if np.isscalar(pmt_ids):
+        channel = geo[geo.pmt_id==pmt_ids].channel_id.values[0]
+        return channel
+    else:
+        channels = [ geo[geo.pmt_id==pmt].channel_id.values[0] for pmt in pmt_ids ] 
+        return channels
     
 def load_hv(filename, voltages):
 
@@ -80,9 +91,13 @@ def getTimestamp(file):
     
 
 # Load a single file
-def getDataFrame(file, timeseries=True):
+def getDataFrame(file, offPMTs, timeseries=True):
    
     df=pd.read_csv(file, sep=',')
+    
+    # remove list of PMTs that are off
+    channel_ids = PMTid_to_channel(offPMTs)
+    df= df[~df['pmt'].isin(channel_ids)]
     
     if timeseries:
         df["timestamp"] = getTimestamp(file)
