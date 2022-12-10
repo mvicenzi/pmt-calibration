@@ -1,9 +1,8 @@
 export run=$1
 export limit=20
 export list=input/files-run${run}.list
-export histdir="./histograms/"
+export histdir="./histograms_splitted/"
 export fcl="bkgphotons-calibration.fcl"
-
 
 
 # This part creates a files list
@@ -29,13 +28,23 @@ echo "Project has ${njobs} files"
 
 
 # This part does the fit
-if test -f "${histdir}/pulseDistributionHist_run${run}.root"; then 
+#if test -f "${histdir}/pulseDistributionHist_run${run}.root"; then 
 	
-	echo "file ${histdir}/pulseDistributionHist_run${run}.root already exists!"
-	echo "File will be replaced!"
+#	echo "file ${histdir}/pulseDistributionHist_run${run}.root already exists!"
+#	echo "File will be replaced!"
 	#rm ${histdir}/pulseDistributionHist_run${run}.root
-fi 
+#fi 
 
-lar -c ${fcl} -S input/files-run${run}.list -T ${histdir}/pulseDistributionHist_run${run}.root
+ID=0
+cat $list | while read line || [[ -n $line ]];
+do
+
+echo $line
+
+#lar -c ${fcl} -S input/files-run${run}.list -T ${histdir}/pulseDistributionHist2_run${run}.root
+lar -c ${fcl} -s $line -T ${histdir}/pulseDistributionHist_${ID}_run${run}.root
+
+((ID++))
+done
 
 echo "ALL DONE!"
