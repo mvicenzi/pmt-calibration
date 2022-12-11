@@ -41,7 +41,6 @@ double IdealPMTResponse (double *x, double *par) {
 		val+=poissonGauss( x[0], amplitude, n, mu, q, sigma );
 
 	if( hasExponential ){
-
 		double a0 = par[4];
 		double c0 = par[5];
 
@@ -59,16 +58,16 @@ double IdealPMTResponse (double *x, double *par) {
 
 void single_fit(){
 
-	int run = 9226;
+	int run = 9230;
 	std::string inputFilename="histograms/pulseDistributionHist_run" + std::to_string(run) + ".root";
 	//std::string  destinationFolder="calibrationdb";
 
 	std::cout << "Reading from " << inputFilename << std::endl;
 
 	int debug = 1;
-	int channel = 51; 
+	int channel = 192; 
 
-	float rangeLow=0.15, rangeHigh=2.0;
+	float rangeLow=0.1, rangeHigh=2.0;
 	int modelPedestal=0;
 
 
