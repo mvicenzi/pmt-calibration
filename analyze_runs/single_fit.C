@@ -56,16 +56,16 @@ double IdealPMTResponse (double *x, double *par) {
 ////////////////////////////////////
 
 
-void single_fit(){
+void single_fit(int run, int channel){
 
-	int run = 9230;
+	//int run = 9230;
 	std::string inputFilename="histograms/pulseDistributionHist_run" + std::to_string(run) + ".root";
 	//std::string  destinationFolder="calibrationdb";
 
 	std::cout << "Reading from " << inputFilename << std::endl;
 
 	int debug = 1;
-	int channel = 192; 
+	//int channel = 23; 
 
 	float rangeLow=0.1, rangeHigh=2.0;
 	int modelPedestal=0;
