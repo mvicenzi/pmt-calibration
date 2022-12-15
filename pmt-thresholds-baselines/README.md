@@ -10,7 +10,7 @@ The code requires some specific python libraries, so the advice is to set up a p
 3. Do `source path/to/env/bin/activate`
 4. Finally, install all requirements:  `python -m pip install -r requirement.txt`
 
-The required libraries (and much more) are in the file [requirement.txt](../requirement.txt)
+The required libraries (and much more) are in the file [requirement.txt](../requirement.txt). 
 After the first time, do step 1 and 3 to activate the environment each time.
 
 NB: The code uses the channel mapping stored in `icarus_data`, so always setup the most recent version of icaruscode to grab the correct mapping!
@@ -28,7 +28,8 @@ channel_id,baseline,...,
 0,14500.2,...,
 1,18349.3,...,
 2,16574,...,
-...,...,...,
+...,
+358,16273.2,...,
 359,19342.0,...,
 ```
 
