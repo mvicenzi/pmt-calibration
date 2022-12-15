@@ -140,8 +140,7 @@ for pmt_component in pmt_components:
 	editFile( foldername+pmt_component, baselines, set_threshold )
 
 # Change name to the folder
-
-newfoldername = foldername.replace( "Thr400", ("thr%d"%set_threshold) )
+newfoldername = foldername.replace( "thr380", ("thr%d"%set_threshold) )
 
 print("Creating a configuration {} with threshold {}".format(newfoldername, set_threshold))
 
