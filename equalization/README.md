@@ -24,7 +24,7 @@ The required libraries (and much more) are in the file [requirement.txt](../requ
 After the first time, do step 1 and 3 to activate the environment each time.
 
 ## How to run
-To launch the python notebook from gpvm machine, follow these steps:
+To launch the python notebook from a gpvm machine, follow these steps:
 
 * Login to a machine with port-forwarding: `ssh -K -L 8884:localhost:8884 user@icarusgpvm06.fnal.gov`
 * Setup the python environment
