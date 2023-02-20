@@ -18,7 +18,6 @@ Running this code requires setting up `icaruscode` either `v09_66_02` or a more 
 ```
 setup icaruscode v09_66_02 -q e20:prof
 ``` 
-
 ### Python code
 Running the python notebooks require some specific python libraries, so the advice is to set up a python environment in which to install everything. To do so:
 
