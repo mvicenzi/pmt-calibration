@@ -67,7 +67,7 @@ void single_fit(int run, int channel){
 	int debug = 1;
 	//int channel = 23; 
 
-	float rangeLow=0.1, rangeHigh=2.0;
+	float rangeLow=0.3, rangeHigh=2.0;
 	int modelPedestal=0;
 
 

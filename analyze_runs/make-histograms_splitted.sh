@@ -1,8 +1,8 @@
 export run=$1
-export limit=20
+export limit=200
 export list=input/files-run${run}.list
 export histdir="./histograms_splitted/"
-export fcl="bkgphotons-calibration.fcl"
+export fcl="bkgphotons-calibration_v3.fcl"
 
 
 # This part creates a files list
@@ -17,8 +17,8 @@ echo "Creating new file list"
 touch $list
 
 #for file in $( samweb list-files "run_number=${run} AND data_tier reconstructed AND icarus_project.stage stage0 with limit ${limit}" )
-#for file in $( samweb list-files "run_number=${run} AND data_tier raw  AND (Data_Stream=offbeambnbminbias OR Data_Stream=offbeamnumiminbias) with limit ${limit}" )
-for file in $( samweb list-files "run_number=${run} AND data_tier raw  with limit ${limit}" )
+for file in $( samweb list-files "run_number=${run} AND data_tier raw  AND (Data_Stream=offbeambnbminbias OR Data_Stream=offbeamnumiminbias) with limit ${limit}" )
+#for file in $( samweb list-files "run_number=${run} AND data_tier raw  with limit ${limit}" )
 do
 	echo $( samweb get-file-access-url --schema=root --location=enstore $file ) >> $list
 done 

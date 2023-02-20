@@ -127,6 +127,7 @@ def getMostRecentCalibration( sourcedir = "../calibrationdb/", timeseries=False 
 
 
 ############################### DATA IMPORTER FUNCTION ###############################
+offPMTs=[1, 111, 143, 166, 192, 230, 238, 254, 222, 302, 309, 340, 353, 290 ]
 
 def dataLoader( sourcedir = "../calibrationdb/", 
                 voltage_file="../../hv_files/Sy4527channels_Dec2022_nominal.sub", 
@@ -138,7 +139,7 @@ def dataLoader( sourcedir = "../calibrationdb/",
     
       
     # Load the data from the fit database
-    data = pd.concat([ getDataFrame(sourcedir+file, True) for file in  os.listdir(sourcedir)[:-1] if "backgroundphotons" in file ])
+    data = pd.concat([ getDataFrame(sourcedir+file, offPMTs, True) for file in  os.listdir(sourcedir)[:-1] if "backgroundphotons" in file ])
     
           
     # keep data only for the selected interval
