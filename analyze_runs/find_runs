@@ -1,1 +1,1 @@
- samweb list-files run_number=${1} AND data_tier raw  with limit ${2}
+samweb list-files "run_number=${1} AND data_tier raw AND (Data_Stream=offbeambnbminbias OR Data_Stream=offbeamnumiminbias) with limit ${2}"

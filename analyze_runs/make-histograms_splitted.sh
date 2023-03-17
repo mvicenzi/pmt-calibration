@@ -39,10 +39,15 @@ ID=0
 cat $list | while read line || [[ -n $line ]];
 do
 
-echo $line
+name=${histdir}/pulseDistributionHist_${ID}_run${run}.root
+if test -f "$name"; then
+  ((ID++))
+  continue;
+fi
 
-#lar -c ${fcl} -S input/files-run${run}.list -T ${histdir}/pulseDistributionHist2_run${run}.root
-lar -c ${fcl} -s $line -T ${histdir}/pulseDistributionHist_${ID}_run${run}.root
+echo $line
+echo "$ID / ${njobs}" 
+lar -c ${fcl} -s $line -T ${name}
 
 ((ID++))
 done

@@ -2,10 +2,12 @@ export run=$1
 
 list=""
 out="histograms/pulseDistributionHist_run${run}.root" 
+dir="histograms_splitted/*run${run}.root"
 
-for n in {0..19};
+for f in $(ls ${dir});
 do
-	list+=" histograms_splitted/pulseDistributionHist_${n}_run${run}.root"
+	#echo $f
+	list+=" ${f}"
 done
 
 #echo $list
