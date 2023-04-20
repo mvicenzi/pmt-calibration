@@ -1,1 +1,0 @@
-samweb list-files "run_number=${1} AND data_tier raw AND (Data_Stream=offbeambnbminbias OR Data_Stream=offbeamnumiminbias) with limit ${2}"

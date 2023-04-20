@@ -1,8 +1,9 @@
 export run=$1
 
 list=""
-out="histograms/pulseDistributionHist_run${run}.root" 
-dir="histograms_splitted/*run${run}.root"
+histdir="/icarus/data/users/${USER}/pmt-calibration/histograms"
+out="${histdir}/pulseDistributionHist_run${run}.root" 
+dir="/icarus/data/users/${USER}/pmt-calibration/histograms_splitted/*run${run}.root"
 
 for f in $(ls ${dir});
 do
@@ -12,6 +13,8 @@ done
 
 #echo $list
 echo "Merging into ${out}"
+
+mkdir -p $histdir
 
 if test -f "$out"; then
     echo "$out exists. Removing old file"
