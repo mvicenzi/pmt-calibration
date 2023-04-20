@@ -1,6 +1,6 @@
 export run=$1
 export version="v09_67_00"
-export jobs="20"
+export jobs=$2
 
 # getting some paths
 export fcl="./bkgphotons-calibration_v3.fcl"
@@ -25,7 +25,7 @@ fi
 
 touch $xml
 
-echo "<?xml version=\"1.0\"?>                             " >> $xml
+echo "<?xml version=\"1.0\"?>                            " >> $xml
 echo "<!-- Production Project -->                        " >> $xml
 echo "<!DOCTYPE project [                                " >> $xml
 echo "<!ENTITY release      \"${version}\" >             " >> $xml

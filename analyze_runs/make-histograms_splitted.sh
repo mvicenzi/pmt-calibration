@@ -1,5 +1,5 @@
 export run=$1
-export limit=200
+export limit=$2
 export list="/icarus/data/users/${USER}/pmt-calibration/input/files-run${run}.list"
 export histdir="/icarus/data/users/${USER}/pmt-calibrations/histograms_splitted"
 export fcl="bkgphotons-calibration_v3.fcl"
