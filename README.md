@@ -24,6 +24,12 @@ Running this code interactively requires setting up `icaruscode` either `v09_66_
 setup icaruscode v09_66_02 -q e20:prof
 ``` 
 
+Moreover, in order to be able to fetch data files, you need to setup the proper proxy certificate.
+```
+setup cigetcert  # (if not already there)
+cigetcert -s 'fifebatch.fnal.gov' # ask for a certificate -> equivalent to kx509
+voms-proxy-init -noregen -rfc -voms 'fermilab:/fermilab/icarus/Role=Analysis' -valid 120:00
+```
 ### Python code
 Running the python notebooks require some specific python libraries, so the advice is to set up a python environment in which to install everything. To do so:
 
