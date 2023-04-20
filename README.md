@@ -14,15 +14,16 @@ A more detailed description of the available scripts is given in each subdirecto
 
 ## Environment setup
 A few instructions on how to setup the code enviroment to run these scripts.
-The gain estimation requires custom LArSoft modules within `icarucode`, while the other pyhon scripts/notebooks require some specific libraries.
+The gain estimation requires custom LArSoft modules within `icaruscode`, while the other pyhon scripts/notebooks require some specific libraries.
 
 ### LArSoft/icaruscode
 The LArSoft modules needed to extract the PMT gains have been added to `icaruscode` starting from release [v09_66_02](https://github.com/SBNSoftware/icaruscode/tree/v09_66_02) (see [PR497](https://github.com/SBNSoftware/icaruscode/pull/497)).
 
-Running this code requires setting up `icaruscode` either `v09_66_02` or a more recent version:
+Running this code interactively requires setting up `icaruscode` either `v09_66_02` or a more recent version:
 ```
 setup icaruscode v09_66_02 -q e20:prof
 ``` 
+
 ### Python code
 Running the python notebooks require some specific python libraries, so the advice is to set up a python environment in which to install everything. To do so:
 
