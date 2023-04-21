@@ -74,6 +74,10 @@ echo "</project>                             " >> $xml
 echo "</job>                             " >> $xml
 
 # now submitting the job to the grid
+rm -r ${scratch}/${run}/out/*
+rm -r ${scratch}/${run}/log/*
+rm -r ${scratch}/${run}/work/*
+
 project.py --xml ${xml} --stage bkgphotons --submit
 
 echo "ALL DONE"
