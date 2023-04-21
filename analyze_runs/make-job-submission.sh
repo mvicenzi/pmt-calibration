@@ -60,7 +60,7 @@ echo "  <logdir>${scratch}/&run_number;/log</logdir>      " >> $xml
 echo "  <workdir>${scratch}/&run_number;/work</workdir>   " >> $xml
 echo "  <numjobs>${jobs}</numjobs>                        " >> $xml
 echo "  <datatier>reconstructed</datatier>                " >> $xml
-echo "  <jobsub>--memory=2000 --expected-lifetime=8h -G icarus </jobsub> " >> $xml
+echo "  <jobsub>--memory=2000 --expected-lifetime=8h -G icarus</jobsub>   " >> $xml
 echo "  <disk>20GB</disk>                                 " >> $xml
 echo "</stage>                                            " >> $xml
 
@@ -74,9 +74,9 @@ echo "</project>                             " >> $xml
 echo "</job>                             " >> $xml
 
 # now submitting the job to the grid
-rm -r ${scratch}/${run}/out/*
-rm -r ${scratch}/${run}/log/*
-rm -r ${scratch}/${run}/work/*
+if [ -d "${scratch}/${run}/out" ]; then rm -Rf ${scratch}/${run}/out/*; fi
+if [ -d "${scratch}/${run}/log" ]; then rm -Rf ${scratch}/${run}/log/*; fi
+if [ -d "${scratch}/${run}/work" ]; then rm -Rf ${scratch}/${run}/work/*; fi
 
 project.py --xml ${xml} --stage bkgphotons --submit
 
