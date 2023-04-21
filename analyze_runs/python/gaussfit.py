@@ -50,6 +50,6 @@ def makeplot( timestamp, figname, xs, ys, param, errors ):
     plt.legend(title = "%s" % datetime.fromtimestamp(timestamp))
 
     if figname != "":
-        plt.savefig( "../figs/"+figname, dpi=500 )
+        plt.savefig( figname, dpi=500 )
 
     return plt

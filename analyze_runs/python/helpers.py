@@ -8,6 +8,8 @@ import sqlite3
 
 from collections import defaultdict
 
+
+###############################################################################################################
 def readSqlitedb(database="/cvmfs/icarus.opensciencegrid.org/products/icarus/icarus_data/v09_62_00/icarus_data/database/ChannelMapICARUS.db", table="pmt_placements"):
 
     # Read sqlite query results into a pandas DataFrame
@@ -40,6 +42,8 @@ def PMTid_to_channel(pmt_ids):
         channels = [ geo[geo.pmt_id==pmt].channel_id.values[0] for pmt in pmt_ids ] 
         return channels
     
+############################################################################################################
+
 def load_hv(filename, voltages):
 
     """
@@ -81,6 +85,8 @@ def correctMapping( df, geo, timestamps ):
 
     return df
 
+##############################################################################################################
+
 # Get the timestamp
 def getTimestamp(file):
     
@@ -88,7 +94,14 @@ def getTimestamp(file):
     timestamp = int(buff[-1].split('.')[0])
     
     return timestamp
+
+# Get the run number
+def getRun(file):
     
+    buff=file.split('_')
+    run = int(buff[-2].lstrip("run"))
+    
+    return run
 
 # Load a single file
 def getDataFrame(file, offPMTs, timeseries=True):
@@ -104,7 +117,6 @@ def getDataFrame(file, offPMTs, timeseries=True):
         df.set_index("timestamp", inplace=True)
     
     return df
-    
 
 # Load a dataframe dictionary having timestamp as key   
 def dataLoaderDict( sourcedir = "../calibrationdb/" ):
@@ -122,25 +134,18 @@ def getMostRecentCalibration( sourcedir = "../calibrationdb/", timeseries=False 
     return mostRecentFile
 
 
-
-
-
-
-############################### DATA IMPORTER FUNCTION ###############################
+############################### DATA IMPORTER FUNCTION #######################################################
 offPMTs=[1, 111, 143, 166, 192, 230, 238, 254, 222, 302, 309, 340, 353, 290 ]
 
 def dataLoader( sourcedir = "../calibrationdb/", 
                 voltage_file="../../hv_files/Sy4527channels_Dec2022_nominal.sub", 
                 interval=(1610067905, 1637788392), 
                 adders=0.1 ):
-        
-        
+            
     print("Import data in folder{} for interval ({}:{})".format(sourcedir, interval[0], interval[1]))
     
-      
     # Load the data from the fit database
     data = pd.concat([ getDataFrame(sourcedir+file, offPMTs, True) for file in  os.listdir(sourcedir)[:-1] if "backgroundphotons" in file ])
-    
           
     # keep data only for the selected interval
     data = data.loc[(data.index>=interval[0]) & (data.index<interval[1])]
