@@ -23,8 +23,11 @@ The fitted gain are saved as `/icarus/data/users/${USERS}/pmt-calibration/calibr
 The timestamp is taken from the first event in the run and it can be used to tag the gain measurement in time.
 
 For the job submission, the relevant scripts are the following:
-* [make-list-raw.sh](make-list-raw.sh): it creates a list of raw files to be processed on the grid, similarly to the first step of `make-histograms.sh`.
+* [make-list-raw.sh](make-list-raw.sh): it creates a samweb dataset definition and a list of raw files to be processed on the grid, similarly to the first step of `make-histograms.sh`.
+  In addition, it checks if the files are readily available on disk. If more than 1% of the files are on tape, it starts prestaging the dataset.
+  The prestaging can take a long time, but it runs in the background (the terminal can be closed, status can be checked in the webpage).
 * [make-job-submission.sh](make-job-submission.sh): it builds a `xml` file with the format required by `project.py` and submits it on the grid.
+   It uses the file list created by the previous step instead of the samweb definition, thus allowing to setup jobs in parallel.
    After the submission, it is up to the user to check the status of the jobs and proceed when they are all completed.
 * [glob-job-output.sh](glob-job-output.sh): it collects the job outputs from the scratch directory and copies them over to the `histograms_splitted` directory.
    These files are now effectively the same as those coming from `make-histograms_splitted.sh` and the next steps can be run interactively.
@@ -90,5 +93,5 @@ To launch the python notebook from a gpvm machine, follow these steps:
 
 ## Important notes
 * The quality of the fit to extract the gain is strongly dependent on the statistics in the histograms.
-  It is important to be able to process at least 200 files, which corresponds to 10000 events (50 events per file).
+  It is important to be able to process hundreds of files, since there are only 50 events per file.
 

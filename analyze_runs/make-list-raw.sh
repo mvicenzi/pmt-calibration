@@ -29,7 +29,7 @@ echo $DEFNAME >> $def
 
 echo "Creating file list ${list}" 
 if test -f "$list"; then
-    echo "$def exists. Removing old list"
+    echo "$list exists. Removing old list"
     rm $list
 fi
 touch $list
