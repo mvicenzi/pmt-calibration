@@ -6,6 +6,8 @@ export jobs=$2
 export fcl="./bkgphotons-calibration_v3.fcl"
 export ffcl=$(readlink -f $fcl)
 export list="/icarus/data/users/${USER}/pmt-calibration/input/files-run${run}.list"
+export def="/icarus/data/users/${USER}/pmt-calibration/input/dataset-run${run}.txt"
+export dataset=$(head -n 1 $def)
 export grid="/icarus/data/users/${USER}/pmt-calibration/grid"
 export xml="${grid}/grid_job_run${run}.xml"
 
@@ -55,6 +57,7 @@ echo "<!-- Project stages -->                " >> $xml
 echo "<stage name=\"bkgphotons\">            " >> $xml
 echo "  <fcl>${ffcl}</fcl>                   " >> $xml
 echo "  <inputlist>${list}</inputlist>       " >> $xml
+#echo "  <inputdef>${dataset}</inputdef>         " >> $xml
 echo "  <outdir>${scratch}/&run_number;/out</outdir>      " >> $xml
 echo "  <logdir>${scratch}/&run_number;/log</logdir>      " >> $xml
 echo "  <workdir>${scratch}/&run_number;/work</workdir>   " >> $xml
