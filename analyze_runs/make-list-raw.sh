@@ -65,7 +65,7 @@ thr=$(echo "$njobs" | awk '{printf "%d", 0.01*$1}')
 if ((prestage > thr)); then
 	echo "Prestaging files..." 
 	echo "This can take a long time, but you can close this terminal & check status on webpage!"
-	nohup samweb prestage-dataset --defname=${DEFNAME} --touch >> prestage.log	
+	nohup samweb prestage-dataset --defname=${DEFNAME} --touch
 fi
 
 echo "ALL DONE!"
