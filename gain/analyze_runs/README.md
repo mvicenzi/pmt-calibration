@@ -7,7 +7,7 @@ The scripts automatically create directories in `/icarus/data/users/${USERS}/pmt
 
 For running interactively. the relevant scrips are the following:
 * [make-histograms.sh](make-histograms.sh): it creates a list of raw data files and processes them in one LArSoft call. 
-   The output is a `.root` file containing three histograms for each PMT channel (distributions of the integrated charge, pulse peak and pulsa rate).
+   The output is a `.root` file containing three histograms for each PMT channel (distributions of the integrated charge, pulse peak and pulse rate).
    However, if one file hangs, the process is stopped and the output file is not created.
 * [make-histograms_splitted.sh](make-histograms_splitted.sh): it creates a list of raw data files and processes each file in a different LArSoft call.
    If one file hangs, it goes on to the next. The output is the same, but splitted into many output files.
@@ -34,26 +34,6 @@ For the job submission, the relevant scripts are the following:
 
 The [python](python) folder contains a few jupyter notebooks that can be used to plot what is contained in the `.csv` files, including tracking the time evolution of each PMT gain.
 These are meant for quick analysis, while the gain equalization is perfomed by the notebook in [equalization](../equalization).
-
-## Setting-up
-
-### LArSoft
-The LArSoft modules needed to extract the PMT gains have been added to `icaruscode` starting from release [v09_66_02](https://github.com/SBNSoftware/icaruscode/tree/v09_66_02) (see [PR497](https://github.com/SBNSoftware/icaruscode/pull/497)).
-
-Running this code interactively requires setting up `icaruscode` either `v09_66_02` or a more recent version:
-```
-setup icaruscode v09_66_02 -q e20:prof
-``` 
-### Python notebooks
-Running the notebook requires some specific python libraries, so the advice is to set up a python environment in which to install everything. To do so:
-
-1. First, get a recent version of `icaruscode`: `setup icaruscode v09_66_02 -q e20:prof`
-2. Create the environment at a destination of your preference:  `python3 -m venv /path/to/env/`
-3. Do `source path/to/env/bin/activate`
-4. Finally, install all requirements:  `python -m pip install -r requirement.txt`
-
-The required libraries (and much more) are in the file [requirement.txt](../requirement.txt). 
-After the first time, do step 1 and 3 to activate the environment each time.
 
 ## How to run
 
