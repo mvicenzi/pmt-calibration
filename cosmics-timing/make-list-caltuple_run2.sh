@@ -1,7 +1,6 @@
 export run=$1
 export stream=$2
-export odir="/icarus/app/users/${USER}/cosmics-timing/inputs"
-
+export odir="/icarus/app/users/${USER}/pmt-calibration/cosmics-timing/inputs"
 export dir="/icarus/data/users/${USER}/pmt-info/runs/${run}"
 
 #create directory (if not existing)
