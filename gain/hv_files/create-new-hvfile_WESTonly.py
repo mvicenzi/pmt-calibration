@@ -1,5 +1,26 @@
 import numpy as np
 import sys, os
+import sqlite3
+import pandas as pd
+
+def readSqlitedb(database="/cvmfs/icarus.opensciencegrid.org/products/icarus/icarus_data/v09_67_00/icarus_data/database/ChannelMapICARUS.db", table="pmt_placements"):
+
+    # Read sqlite query results into a pandas DataFrame
+    con = sqlite3.connect(database)
+    df = pd.read_sql_query("SELECT * from {}".format(table), con)
+
+    con.close()
+    return df
+
+def getCryo(pmtID):
+    
+    geo = readSqlitedb()
+    board = geo[geo.pmt_id==pmtID].digitizer_label.values[0]
+    wall, pos, num = board.split("-")
+    if wall[0] == "W":
+        return 1
+    elif wall[0] == "E":
+        return 0
 
 def writeHVFile( offset, oldfilename, newfilename ):
 
@@ -33,7 +54,14 @@ def writeHVFile( offset, oldfilename, newfilename ):
 					nfp.write(line)
 					offPMTs.append(pmtID)	
 					continue
-				
+			
+				# Skip EAST PTMs:
+				if getCryo(pmtID) == 0:
+					print( "PMT {} is in EAST cryo, skipping".format(pmtID) )
+					line = ",".join(buff)
+					nfp.write(line)
+					continue
+	
 				# Cap values over 2100 V
 				if value > 2100:
 					print( "WARNING: Capped voltage to 2100V for PMT {}".format(pmtID) )
@@ -64,7 +92,7 @@ def writeHVFile( offset, oldfilename, newfilename ):
 		with open("offPMTs.txt","w") as f:
 			for item in offPMTs:
 				f.write("%s\n" % item)
-		
+	
 		return
 
 
@@ -72,25 +100,25 @@ def main():
 
 	oldfile = sys.argv[1]
 
-	newfile = oldfile.replace("nominal", "p100")
+	newfile = oldfile.replace("nominal", "WESTonly_p30")
 	os.system( "touch {}".format(newfile) )
-	print( oldfile, newfile, 100 )
-	writeHVFile( 100, oldfile, newfile )
+	print( oldfile, newfile, 30 )
+	writeHVFile( 30, oldfile, newfile )
 
-	newfile = oldfile.replace("nominal", "p50")
-	os.system( "touch {}".format(newfile) )
-	print( oldfile, newfile, +50 )
-	writeHVFile( +50, oldfile, newfile )
-
-	newfile = oldfile.replace("nominal", "m30")
+	newfile = oldfile.replace("nominal", "WESTonly_m30")
 	os.system( "touch {}".format(newfile) )
 	print( oldfile, newfile, -30 )
 	writeHVFile( -30, oldfile, newfile )
 
-	newfile = oldfile.replace("nominal", "m50")
+	newfile = oldfile.replace("nominal", "WESTonly_m50")
 	os.system( "touch {}".format(newfile) )
 	print( oldfile, newfile, -50 )
 	writeHVFile( -50, oldfile, newfile )
+
+	newfile = oldfile.replace("nominal", "WESTonly_m100")
+	os.system( "touch {}".format(newfile) )
+	print( oldfile, newfile, -100 )
+	writeHVFile( -100, oldfile, newfile )
 	
 	print("ALL DONE!")
 

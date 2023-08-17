@@ -3,6 +3,9 @@
 This folder contains the script `create-new-hvfile.py` that automatically produces new PMT HV files for the calibration runs starting from the existing one.
 It requires basic python libraries and `numpy`, which can be included by setting up a recent version of `icaruscode`.
 
+There are also two other versions of the same script which can be used to change voltages on only one of the two cryostats.
+However, these two scripts also require `sqlite3` and `pandas` libraries.
+
 ## How to run
 
 The script can be run with
