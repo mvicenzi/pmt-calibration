@@ -14,7 +14,6 @@ def getEqualization( mu, sigma, emu, esigma ):
     error = np.sqrt( (emu/mu)**2 + (esigma/sigma)**2 )*equalization
     return equalization, error
 
-
 # The fit function
 def gaus(x,a,mean,sigma):
     return a*np.exp(-(x-mean)**2/(2*sigma**2))
@@ -45,9 +44,10 @@ def makeplot( timestamp, figname, xs, ys, param, errors ):
 
     plt.plot(xs, ys_fitted, '-.', lw=3.0, label="Number of PMTs: {:d} \nMean: {:.2e} \nSigma: {:.1e} \nEqualization: {:.1f}%".format( np.sum(ys), param[1], param[2], (param[2]/param[1])*100) )
 
-    plt.xlabel("Gains [10^7 electrons]")
-    plt.ylabel("# PMTs")
-    plt.legend(title = "%s" % datetime.fromtimestamp(timestamp))
+    plt.xlabel("Gains [10^7 electrons]", fontsize=12)
+    plt.ylabel("# PMTs", fontsize=12)
+    plt.legend(title = "%s" % datetime.fromtimestamp(timestamp), fontsize=12)
+    plt.grid(alpha=0.5,linestyle="dashed")
 
     if figname != "":
         plt.savefig( figname, dpi=500 )

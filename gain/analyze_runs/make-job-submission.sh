@@ -5,10 +5,10 @@ export jobs=$2
 # getting some paths
 export fcl="./bkgphotons-calibration_v3.fcl"
 export ffcl=$(readlink -f $fcl)
-export list="/icarus/data/users/${USER}/pmt-calibration/input/files-run${run}.list"
-export def="/icarus/data/users/${USER}/pmt-calibration/input/dataset-run${run}.txt"
+export list="/exp/icarus/data/users/${USER}/pmt-calibration/input/files-run${run}.list"
+export def="/exp/icarus/data/users/${USER}/pmt-calibration/input/dataset-run${run}.txt"
 export dataset=$(head -n 1 $def)
-export grid="/icarus/data/users/${USER}/pmt-calibration/grid"
+export grid="/exp/icarus/data/users/${USER}/pmt-calibration/grid"
 export xml="${grid}/grid_job_run${run}.xml"
 
 # creating directories in scratch
@@ -50,7 +50,7 @@ echo "<!-- Larsoft information -->           " >> $xml
 echo "<larsoft>                              " >> $xml
 echo "  <tag>&release;</tag>                 " >> $xml
 echo "  <qual>e20:prof</qual>                " >> $xml
-echo "  <local>/pnfs/icarus/scratch/users/mvicenzi/icaruscode_v09_67_00_removeDecoderBits.tar</local> " >> $xml
+echo "  <local>/pnfs/icarus/scratch/users/mvicenzi/icaruscode_v09_67_00_removeDecoderBits_newChannelMapping.tar</local> " >> $xml
 echo "</larsoft>                             " >> $xml
 
 echo "<!-- Project stages -->                " >> $xml

@@ -1,5 +1,5 @@
 export run=$1
-export calibdb="/icarus/data/users/${USER}/pmt-calibration/amplitudedb/"
+export calibdb="/exp/icarus/data/users/${USER}/pmt-calibration/amplitudedb/"
 export min=$2
 export max=$3
 

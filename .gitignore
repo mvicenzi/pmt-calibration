@@ -2,3 +2,6 @@
 *.pdf
 *.csv
 *.sub
+*.png
+.ipynb_checkpoints/
+__pycache__/

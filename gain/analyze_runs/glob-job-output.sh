@@ -1,6 +1,6 @@
 export run=$1
 export path="/pnfs/icarus/scratch/users/${USER}/pmt-gains/${run}/out/"
-export odir="/icarus/data/users/${USER}/pmt-calibration/histograms_splitted"
+export odir="/exp/icarus/data/users/${USER}/pmt-calibration/histograms_splitted"
 
 #create directory (if not existing)
 mkdir -p $odir

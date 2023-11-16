@@ -88,7 +88,7 @@ def fit_all(pdf, outfile, filepath, ma, mi):
     file1 = r.TFile(filepath,"READ")
     dir1 = file1.Get("bkgcalibration")
 
-    for ch in range(180,360):
+    for ch in range(0,360):
         
         hamp = "hamplitude"+str(ch)
         hamp1 = dir1.Get(hamp)
@@ -96,7 +96,7 @@ def fit_all(pdf, outfile, filepath, ma, mi):
         line = str(ch) + "," + str(nentries) + ","
         a1, ea1, wa1, xs, ys = get_histo_things(hamp1,ma,mi)
      
-        fig = plt.figure(figsize=(12, 4))
+        fig = plt.figure(figsize=(8, 5))
         plt.hist(a1, bins=ea1, weights=wa1, histtype="step", label="Ch {} - v09_67_00\nEntries: {}".format(ch, nentries), lw=1.5)
  
         vtrials=np.arange(mi,ma,0.5)
@@ -164,10 +164,10 @@ def main():
     mi = int(args[2])
     ma = int(args[3])
     
-    filepath ="/icarus/data/users/{}/pmt-calibration/histograms/pulseDistributionHist_run{}.root".format(user,run)
+    filepath ="/exp/icarus/data/users/{}/pmt-calibration/histograms/pulseDistributionHist_run{}.root".format(user,run)
     timestamp = getTimestamp(filepath)
-    outpdf = "/icarus/app/users/{}/pmt-calibration/gain/analyze_runs/python/figs/amplitude_{}.pdf".format(user,run)
-    outdb = "/icarus/data/users/{}/pmt-calibration/amplitudedb/bkgphamplitude_run{}_{}.csv".format(user,run,timestamp)
+    outpdf = "/exp/icarus/app/users/{}/pmt-calibration/gain/analyze_runs/python/figs/amplitude_{}.pdf".format(user,run)
+    outdb = "/exp/icarus/data/users/{}/pmt-calibration/amplitudedb/bkgphamplitude_run{}_{}.csv".format(user,run,timestamp)
 
     print("Fitting amplitude histograms from run {} in [{},{}]".format(run,mi,ma))
    

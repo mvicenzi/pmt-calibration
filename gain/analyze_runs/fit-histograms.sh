@@ -1,6 +1,6 @@
 export run=$1
-export file="/icarus/data/users/${USER}/pmt-calibration/histograms/pulseDistributionHist_run${run}.root"
-export calibdb="/icarus/data/users/${USER}/pmt-calibration/calibrationdb/"
+export file="/exp/icarus/data/users/${USER}/pmt-calibration/histograms/pulseDistributionHist_run${run}.root"
+export calibdb="/exp/icarus/data/users/${USER}/pmt-calibration/calibrationdb/"
 
 mkdir -p $calibdb
 

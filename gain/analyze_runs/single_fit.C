@@ -59,7 +59,7 @@ double IdealPMTResponse (double *x, double *par) {
 void single_fit(int run, int channel){
 
 	//int run = 9230;
-	std::string inputFilename="/icarus/data/users/mvicenzi/pmt-calibration/histograms/pulseDistributionHist_run" + std::to_string(run) + ".root";
+	std::string inputFilename="/exp/icarus/data/users/mvicenzi/pmt-calibration/histograms/pulseDistributionHist_run" + std::to_string(run) + ".root";
 	//std::string  destinationFolder="calibrationdb";
 
 	std::cout << "Reading from " << inputFilename << std::endl;
@@ -67,7 +67,7 @@ void single_fit(int run, int channel){
 	int debug = 1;
 	//int channel = 23; 
 
-	float rangeLow=0.3, rangeHigh=2.0;
+	float rangeLow=0.1, rangeHigh=2.0;
 	int modelPedestal=0;
 
 

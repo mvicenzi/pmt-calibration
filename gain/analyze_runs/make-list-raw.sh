@@ -1,6 +1,6 @@
 export run=$1
 export limit=$2
-export path="/icarus/data/users/${USER}/pmt-calibration/input"
+export path="/exp/icarus/data/users/${USER}/pmt-calibration/input"
 export list="${path}/files-run${run}.list"
 export def="${path}/dataset-run${run}.txt"
 
