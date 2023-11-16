@@ -1,6 +1,6 @@
 export run=$1
 export stream=$2
-export odir="/icarus/app/users/${USER}/pmt-calibration/cosmics-timing/inputs"
+export odir="/exp/icarus/app/users/${USER}/pmt-calibration/cosmics-timing/inputs"
 export sdir="/pnfs/icarus/scratch/users/${USER}/CNAF_runs/${run}/stage0"
 
 #create directory (if not existing)

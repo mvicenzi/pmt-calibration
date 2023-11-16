@@ -40,11 +40,13 @@
 #include "TH2D.h"
 
 void selectTracks( 
-    std::string const & run="8552",
-    std::string const & fileList="inputs/run8552_tracks_BNBMAJORITY_files.txt",
-    std::string const & outfilename="output/run8552_matched_light_tracks.txt"
+    std::string const & run="9337"
 ){
-    bool _LIMIT = true;
+ 
+    std::string const & fileList="inputs/run" + run + "_tracks_BNBMAJORITY_files.txt";
+    std::string const & outfilename="output/run" + run + "_matched_light_tracks.txt";
+
+    bool _LIMIT = false;
     double MAX_DT_US = 10;
     double MAX_DZ_CM = 30;
 
@@ -97,7 +99,7 @@ void selectTracks(
     std::map<int, double> pmtCorrectionsMap;
     loadPMTTimeCorrections(
         "", // << Hardware/cable corrections (for the sample considered we took care of it during decoding)
-        "",//"/icarus/app/users/mvicenzi/cosmics-timing/inputs/laser_time_corrections_20220408.csv",  //<< Laser equalization
+        "",//"/exp/icarus/app/users/mvicenzi/cosmics-timing/inputs/laser_time_corrections_20220408.csv",  //<< Laser equalization
 	"", //<< Cosmic muons based fine tuning of the above correction  
         pmtCorrectionsMap
     ); 

@@ -3,14 +3,14 @@ export stream=$2
 export odir="/exp/icarus/app/users/${USER}/pmt-calibration/cosmics-timing/inputs"
 
 #loop through files and save in list
-list="${odir}/run${1}_tracks_${stream}_files.txt"
+list="${odir}/run${1}_stage0_${stream}_files.txt"
 if test -f "$list"; then
     echo "$list exists. Removing old list"
     rm $list
 fi
 touch $list
 
-for file in $(samweb list-files run_number = ${run} and file_format = calib_ntuples and version=v09_72_00_05p04);
+for file in $(samweb list-files run_number = ${run} and file_format = artroot and art.process_name=stage0 and version=v09_72_00_05p04);
 do
 	echo $file
         samwebLocFull=$(samweb locate-file $file | grep "enstore")
