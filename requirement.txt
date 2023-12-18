@@ -39,7 +39,6 @@ jupyterlab-pygments==0.1.2
 jupyterlab-server==2.8.2
 jupyterlab-widgets==1.0.2
 kiwisolver==1.3.2
-LHAPDF==6.3.0
 locket==1.0.0
 lz4==3.1.3
 MarkupSafe==2.0.1
@@ -54,7 +53,7 @@ nbformat==5.1.3
 nbstripout==0.5.0
 nest-asyncio==1.5.1
 notebook==6.4.4
-numpy @ file:///scratch/workspace/canvas-products-all/vdevelop-/SLF7/e20-debug/build/numpy/v1_20_1/build/Linux64bit%2B3.10-2.17-e20-p392/numpy-1.20.1
+numpy @ file:///scratch/workspace/canvas-products-all/vdevelop-/SLF7/e20-prof/build/numpy/v1_22_3c/build/Linux64bit%2B3.10-2.17-e20-p3913/numpy-1.22.3
 packaging==21.0
 pandas==1.3.3
 pandocfilters==1.5.0
@@ -67,12 +66,12 @@ platformdirs==3.9.1
 plotly==5.6.0
 prometheus-client==0.11.0
 prompt-toolkit==3.0.20
-psycopg2 @ file:///scratch/workspace/canvas-products-all/vdevelop-/SLF7/e20-debug/build/postgresql/v13_2/src/psycopg2-2.8.6
+psycopg2 @ file:///scratch/workspace/canvas-products/label1/swarm/label2/SLF7/build/postgresql/v14_5/src/psycopg2-2.9.3
 ptyprocess==0.7.0
 pycparser==2.20
-pygccxml @ file:///scratch/greenc/test-products/pygccxml/v2_1_0c/build/pygccxml-2.1.0
+pygccxml @ file:///scratch/workspace/build-nulite/BUILDTYPE/debug/QUAL/s126-e26/label1/swarm/label2/SLF7/build/pygccxml/v2_2_1b/build/pygccxml-2.2.1
 Pygments==2.10.0
-pyHepMC3==3.2.3
+pyHepMC3==3.2.5
 pyparsing==2.4.7
 PyRoot==0.3.0
 pyrsistent==0.18.0
