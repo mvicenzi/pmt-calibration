@@ -9,11 +9,13 @@ mkdir -p $odir
 ID=0
 for file in $( find ${path} -print | egrep '\.root$' );
 do
+
 	if test -f "${odir}/pulseDistributionHist_${ID}_run${run}.root"; then
 		ifdh rm ${odir}/pulseDistributionHist_${ID}_run${run}.root
-	fi
+	fi	
 	
 	ifdh cp ${file} ${odir}/pulseDistributionHist_${ID}_run${run}.root
+
   	((ID++))
 done
 

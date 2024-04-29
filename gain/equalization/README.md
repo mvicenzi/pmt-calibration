@@ -9,7 +9,4 @@ The task performed are:
 * Given a target gain, the required voltage is computed for each PMT according to the fit.
 * The required voltages are written in a new HV file. 
 
-## Disclaimer 
-Several parameters, including file paths, problematic PMTs to be excluded and output names, can be set directly by changing the code.
-Since this task necessarily requires direct user supervision, no attempt was made at further automation.
 

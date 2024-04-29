@@ -1,9 +1,9 @@
 export run=$1
-export version="v09_67_00"
+export version="v09_87_00"
 export jobs=$2
 
 # getting some paths
-export fcl="./bkgphotons-calibration_v3.fcl"
+export fcl="./bkgphotons-calibration.fcl"
 export ffcl=$(readlink -f $fcl)
 export list="/exp/icarus/data/users/${USER}/pmt-calibration/input/files-run${run}.list"
 export def="/exp/icarus/data/users/${USER}/pmt-calibration/input/dataset-run${run}.txt"
@@ -44,13 +44,14 @@ echo "<numevents>&nevents;</numevents>       " >> $xml
 
 echo "<!-- Batch resources -->               " >> $xml
 echo "<os>SL7</os>                           " >> $xml
-echo "<resource>DEDICATED,OPPORTUNISTIC,OFFSITE</resource> " >> $xml
+echo "<resource>DEDICATED,OPPORTUNISTIC</resource> " >> $xml
+echo "<jobsub>--singularity-image /cvmfs/singularity.opensciencegrid.org/fermilab/fnal-wn-sl7:latest</jobsub> " >> $xml
 
 echo "<!-- Larsoft information -->           " >> $xml
 echo "<larsoft>                              " >> $xml
 echo "  <tag>&release;</tag>                 " >> $xml
-echo "  <qual>e20:prof</qual>                " >> $xml
-echo "  <local>/pnfs/icarus/scratch/users/mvicenzi/icaruscode_v09_67_00_removeDecoderBits_newChannelMapping.tar</local> " >> $xml
+echo "  <qual>e26:prof</qual>                " >> $xml
+echo "  <local>/pnfs/icarus/scratch/users/mvicenzi/icaruscode_v09_87_00_gaincalibration_ingate.tar</local> " >> $xml
 echo "</larsoft>                             " >> $xml
 
 echo "<!-- Project stages -->                " >> $xml
@@ -58,7 +59,6 @@ echo "<!-- Project stages -->                " >> $xml
 echo "<stage name=\"bkgphotons\">            " >> $xml
 echo "  <fcl>${ffcl}</fcl>                   " >> $xml
 echo "  <inputlist>${list}</inputlist>       " >> $xml
-#echo "  <inputdef>${dataset}</inputdef>         " >> $xml
 echo "  <outdir>${scratch}/&run_number;/out</outdir>      " >> $xml
 echo "  <logdir>${scratch}/&run_number;/log</logdir>      " >> $xml
 echo "  <workdir>${scratch}/&run_number;/work</workdir>   " >> $xml

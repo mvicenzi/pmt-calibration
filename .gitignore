@@ -3,5 +3,8 @@
 *.csv
 *.sub
 *.png
+*.txt
+*.out
+*.svg
 .ipynb_checkpoints/
 __pycache__/

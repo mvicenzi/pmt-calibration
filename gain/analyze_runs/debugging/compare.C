@@ -102,9 +102,9 @@ void CompareHistograms(const char* file1, const char* file2, const int pmt) {
 }
 
 void compare() {
-    const char* file1 = "/exp/icarus/data/users/mvicenzi/pmt-calibration/histograms/pulseDistributionHist_run10040.root";
-    const char* file2 = "/exp/icarus/data/users/mvicenzi/pmt-calibration/histograms/pulseDistributionHist_run10040_v09_77_00.root";
-    const int pmt = 349;
+    const char* file1 = "/exp/icarus/data/users/mvicenzi/pmt-calibration/histograms/pulseDistributionHist_run11590.root";
+    const char* file2 = "/exp/icarus/data/users/mvicenzi/pmt-calibration/test/pulseDistributionHist_noT_run11590.root";
+    const int pmt = 359;
 
     CompareHistograms(file1, file2, pmt);
 }

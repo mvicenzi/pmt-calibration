@@ -2,8 +2,7 @@ export run=$1
 export limit=$2
 export list="/exp/icarus/data/users/${USER}/pmt-calibration/input/files-run${run}.list"
 export histdir="/exp/icarus/data/users/${USER}/pmt-calibrations/histograms_splitted"
-export fcl="bkgphotons-calibration_v3.fcl"
-
+export fcl="bkgphotons-calibration.fcl"
 
 # This part creates a files list
 echo "creating file list $list"
@@ -16,8 +15,8 @@ fi
 echo "Creating new file list"
 touch $list
 
-for file in $( samweb list-files "run_number=${run} AND data_tier raw  AND (Data_Stream=offbeambnbminbias OR Data_Stream=offbeamnumiminbias) with limit ${limit}" )
-#for file in $( samweb list-files "run_number=${run} AND data_tier raw  with limit ${limit}" )
+for file in $( samweb list-files "run_number=${run} AND data_tier raw AND icarus_project.stage=daq AND (Data_Stream=offbeambnbminbias OR Data_Stream=offbeamnumiminbias) with limit ${limit}" )
+#for file in $( samweb list-files "run_number=${run} AND data_tier raw AND icarus_project.stage=daq  with limit ${limit}" )
 do
 	echo $( samweb get-file-access-url --schema=root --location=enstore $file ) >> $list
 done 

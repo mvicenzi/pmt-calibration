@@ -12,7 +12,7 @@ The LArSoft modules needed to extract the PMT gains have been added to `icarusco
 
 Running this code interactively requires setting up `icaruscode` either `v09_66_02` or a more recent version:
 ```
-setup icaruscode v09_67_00 -q e20:prof
+setup icaruscode v09_87_00 -q e26:prof
 ``` 
 
 Moreover, in order to be able to fetch data files, you need to setup the proper token or  proxy certificate.
@@ -23,7 +23,7 @@ voms-proxy-init -noregen -rfc -voms 'fermilab:/fermilab/icarus/Role=Analysis' -v
 ### Python code
 Running the python notebooks require some specific python libraries, so the advice is to set up a python environment in which to install everything. To do so:
 
-1. First, get a recent version of `icaruscode`: `setup icaruscode v09_67_00 -q e20:prof`
+1. First, get a recent version of `icaruscode`: `setup icaruscode v09_87_00 -q e26:prof`
 2. Create the environment at a destination of your preference:  `python3 -m venv /path/to/env/`
 3. Do `source path/to/env/bin/activate`
 4. Finally, install all requirements:  `python -m pip install -r requirement.txt`

@@ -73,7 +73,7 @@ def IdealSER(x, mu, q, sigma, amplitude):
 def getTimestamp(file):
     
     file1 = r.TFile(file,"READ")
-    tree = file1.Get("bkgcalibration/event")
+    tree = file1.Get("bkgcalibration/ophits")
     tree.GetEntry(0)
     timestamp = tree.timestamp
     file1.Close()     
@@ -164,10 +164,10 @@ def main():
     mi = int(args[2])
     ma = int(args[3])
     
-    filepath ="/exp/icarus/data/users/{}/pmt-calibration/histograms/pulseDistributionHist_run{}.root".format(user,run)
+    filepath = "/exp/icarus/data/users/{}/pmt-calibration/histograms/pulseDistributionHist_run{}.root".format(user,run)
     timestamp = getTimestamp(filepath)
     outpdf = "/exp/icarus/app/users/{}/pmt-calibration/gain/analyze_runs/python/figs/amplitude_{}.pdf".format(user,run)
-    outdb = "/exp/icarus/data/users/{}/pmt-calibration/amplitudedb/bkgphamplitude_run{}_{}.csv".format(user,run,timestamp)
+    outdb  = "/exp/icarus/data/users/{}/pmt-calibration/amplitudedb/bkgphamplitude_run{}_{}.csv".format(user,run,timestamp)
 
     print("Fitting amplitude histograms from run {} in [{},{}]".format(run,mi,ma))
    

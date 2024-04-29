@@ -56,10 +56,19 @@ double IdealPMTResponse (double *x, double *par) {
 ////////////////////////////////////
 
 
-void single_fit(int run, int channel){
+
+void single_fit(int run, int channel, double low=0.05, double high=2.0){
 
 	//int run = 9230;
-	std::string inputFilename="/exp/icarus/data/users/mvicenzi/pmt-calibration/histograms/pulseDistributionHist_run" + std::to_string(run) + ".root";
+	std::ostringstream oss;
+	//oss << "/exp/icarus/data/users/mvicenzi/pmt-calibration/test/pulseDistributionHist_noT_run" << run << ".root";
+	//oss << "/exp/icarus/data/users/mvicenzi/pmt-calibration/histograms/pulseDistributionHist_run" << run << ".root";
+	//oss << "/exp/icarus/data/users/mvicenzi/pmt-calibration/histograms/pulseDistributionHist_run" << "11262,11263" << ".root";
+	//oss << "/exp/icarus/data/users/mvicenzi/pmt-calibration/histograms/pulseDistributionHist_run" << "11276,11279" << ".root";
+	//oss << "/exp/icarus/data/users/mvicenzi/pmt-calibration/histograms/pulseDistributionHist_run" << "11568,11569" << ".root";
+	oss << "/exp/icarus/data/users/mvicenzi/pmt-calibration/histograms/pulseDistributionHist_run" << "11809,11810" << ".root";
+	std::string inputFilename = oss.str();
+	
 	//std::string  destinationFolder="calibrationdb";
 
 	std::cout << "Reading from " << inputFilename << std::endl;
@@ -67,7 +76,7 @@ void single_fit(int run, int channel){
 	int debug = 1;
 	//int channel = 23; 
 
-	float rangeLow=0.1, rangeHigh=2.0;
+	float rangeLow=low, rangeHigh=high;
 	int modelPedestal=0;
 
 
@@ -88,7 +97,7 @@ void single_fit(int run, int channel){
 
 	if( !tfile->IsOpen() ){
 	std::cout << inputFilename << " not found!" << std::endl;
-	return 1;
+	return;
 	}
 
 	std::cout << "Perform fit for run: " << run << ", channel: " << channel << std::endl;
@@ -155,4 +164,5 @@ void single_fit(int run, int channel){
 
 
 	//tfile->Close();
+	//gApplication->Terminate(0);
 }

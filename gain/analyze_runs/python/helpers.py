@@ -10,7 +10,7 @@ from collections import defaultdict
 
 
 ###############################################################################################################
-def readSqlitedb(database="/cvmfs/icarus.opensciencegrid.org/products/icarus/icarus_data/v09_62_00/icarus_data/database/ChannelMapICARUS.db", table="pmt_placements"):
+def readSqlitedb(database="/cvmfs/icarus.opensciencegrid.org/products/icarus/icarus_data/v09_79_02/icarus_data/database/ChannelMapICARUS_20230829.db", table="pmt_placements_29Aug2023"):
 
     # Read sqlite query results into a pandas DataFrame
     con = sqlite3.connect(database)
@@ -111,6 +111,8 @@ def getDataFrame(file, offPMTs, timeseries=True):
     # remove list of PMTs that are off
     channel_ids = PMTid_to_channel(offPMTs)
     df= df[~df['pmt'].isin(channel_ids)]
+    
+    df["id"] = df.pmt.apply( channel_to_PMTid )
     
     if timeseries:
         df["timestamp"] = getTimestamp(file)
