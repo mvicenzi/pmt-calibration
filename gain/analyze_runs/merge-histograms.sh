@@ -3,7 +3,7 @@ export run=$1
 list=""
 histdir="/exp/icarus/data/users/${USER}/pmt-calibration/histograms"
 out="${histdir}/pulseDistributionHist_run${run}.root" 
-dir="/exp/icarus/data/users/${USER}/pmt-calibration/test/splitted/pulseDistributionHist_*_run${run}.root"
+dir="/exp/icarus/data/users/${USER}/pmt-calibration/histograms_splitted/pulseDistributionHist_*_run${run}.root"
 
 for f in $(ls ${dir});
 do
