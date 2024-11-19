@@ -52,11 +52,11 @@ def main():
     CORR = int(args[2])
     MATCHES = "output/run{}_matched_light_tracks.txt".format(RUN)
     LIGHTINFO = "inputs/run{}_tracks_BNBMAJORITY_files.txt".format(RUN)
-    OUTFILE = "output/residuals/Run_2/run{}_residuals_test8ns_fixEast.csv".format(RUN,CORR)
+    OUTFILE = "output/residuals/Run_2/run{}_residuals_TESTwrongCorr{}.csv".format(RUN,CORR)
     FILENAMES = [ line.strip() for line in open(LIGHTINFO, "r") ]
 
     print("Extracting residuals from {}.".format(RUN))
-    #print(" and correcting with cosmics from {}".format(CORR))
+    print(" and correcting with cosmics from {}".format(CORR))
 
     #maxim = 100
     maxim = len(FILENAMES)
@@ -108,20 +108,29 @@ def main():
     wetopc = [238, 239, 235, 236, 237, 230, 233, 234, 232, 231, 220, 223, 224, 222, 221]
     df.loc[(df['channel_id'].isin(wetopc))&(df['pe_pmt']>0), 'time_pmt'] += 0.008 #in us
 
+    ### EAST phase corrections
     eetopb = [78, 79, 75, 76, 77, 68, 69, 65, 66, 67, 60, 63, 64, 62, 61]
     df.loc[(df['channel_id'].isin(eetopb))&(df['pe_pmt']>0), 'time_pmt'] -= 0.008 #in us
 
     eetopc = [58, 59, 55, 56, 57, 50, 53, 54, 52, 51, 40, 43, 44, 42, 41]
     df.loc[(df['channel_id'].isin(eetopc))&(df['pe_pmt']>0), 'time_pmt'] -= 0.008 #in us
 
-    ewbotb = [110, 111, 112, 113, 114, 118, 116, 117, 115, 119, 100, 101, 102, 104, 103]
-    df.loc[(df['channel_id'].isin(ewbotb))&(df['pe_pmt']>0), 'time_pmt'] += 0.006 #in us
+    eebotb = [28, 29, 25, 26, 27, 20, 23, 24, 22, 21, 10, 13, 14, 12, 11]
+    df.loc[(df['channel_id'].isin(eebotb))&(df['pe_pmt']>0), 'time_pmt'] -= 0.008 #in us
+    eebotc = [18, 19, 15, 16, 17, 8, 9, 5, 6, 7, 0, 3, 4, 2, 1]
+    df.loc[(df['channel_id'].isin(eebotc))&(df['pe_pmt']>0), 'time_pmt'] -= 0.008 #in us
+    ewbotc = [108, 106, 107, 105, 109, 90, 91, 92, 93, 94, 98, 96, 97, 95, 99]
+    #df.loc[(df['channel_id'].isin(ewbotc))&(df['pe_pmt']>0), 'time_pmt'] -= 0.008 #in us
 
     ## WARNING: adding cosmics corrections
-    #COSMICSCORR = "output/residuals/Run_2/run{}_residuals_test8ns_fixEast.csv".format(CORR)
-    #cosmics = pd.read_csv(COSMICSCORR).set_index("channel_id")
-    #df = df.join( cosmics["mean_residual_ns"], on="channel_id" )
-    #df["time_pmt"] = df["time_pmt"]-df["mean_residual_ns"]/1e3 #convert ns to us
+    #COSMICSCORR = "output/residuals/Run_2/run{}_residuals_test8ns_fixEast_alternative.csv".format(CORR)
+    #COSMICSCORR = "output/residuals/Run_2/run{}_residuals_test2.csv".format(CORR)
+    COSMICSCORR = "output/residuals/FINAL/cosmics_timing_residuals_t8046_from8461_offpmts_20230727.csv"
+    #COSMICSCORR = "output/residuals/FINAL/cosmics_timing_residuals_t9773_from10085_offpmts_newphase_20231120.csv"
+
+    cosmics = pd.read_csv(COSMICSCORR).set_index("channel_id")
+    df = df.join( cosmics["mean_residual_ns"], on="channel_id" )
+    df["time_pmt"] = df["time_pmt"]-df["mean_residual_ns"]/1e3 #convert ns to us
 
     _pecut=300
     _sel = df.pe_pmt > _pecut
@@ -209,7 +218,7 @@ def main():
     plt.tight_layout()
     plt.grid(linestyle="dashed", alpha=0.5)
     plt.legend(fontsize=12)
-    plt.savefig("figs/run{}_channel_{}_residuals_TEST8ns_fixEast.png".format(RUN,selected_channel,CORR),dpi=100)
+    #plt.savefig("figs/run{}_channel_{}_residuals_TEST8ns_fixEast.png".format(RUN,selected_channel,CORR),dpi=100)
     #plt.show()
     
     # Plotting full distribution 
@@ -229,7 +238,7 @@ def main():
     plt.ylabel("# PMTs")
     plt.legend()
     plt.grid(linestyle="dashed", alpha=0.5)
-    plt.savefig("figs/run{}_residuals_TEST8ns_fixEast.png".format(RUN,CORR),dpi=100)
+    #plt.savefig("figs/run{}_residuals_TEST8ns_fixEast.png".format(RUN,CORR),dpi=100)
     #plt.show()
     
     slopes = meandf["slope"].values
@@ -246,7 +255,7 @@ def main():
     #plt.tight_layout()
     plt.grid(linestyle="dashed",alpha=0.5)
     #plt.legend()
-    plt.savefig("figs/run{}_slope_distribution_TEST8ns_fixEast.png".format(RUN,CORR),dpi=100)
+    #plt.savefig("figs/run{}_slope_distribution_TEST8ns_fixEast.png".format(RUN,CORR),dpi=100)
     #plt.show()
 
 if __name__ == "__main__":
