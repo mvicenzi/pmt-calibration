@@ -72,15 +72,15 @@ def main():
 
 	oldfile = sys.argv[1]
 
-	newfile = oldfile.replace("nominal", "p100")
-	os.system( "touch {}".format(newfile) )
-	print( oldfile, newfile, 100 )
-	writeHVFile( 100, oldfile, newfile )
-
 	newfile = oldfile.replace("nominal", "p50")
 	os.system( "touch {}".format(newfile) )
 	print( oldfile, newfile, +50 )
 	writeHVFile( +50, oldfile, newfile )
+
+	newfile = oldfile.replace("nominal", "p30")
+	os.system( "touch {}".format(newfile) )
+	print( oldfile, newfile, +30 )
+	writeHVFile( +30, oldfile, newfile )
 
 	newfile = oldfile.replace("nominal", "m30")
 	os.system( "touch {}".format(newfile) )

@@ -1,5 +1,5 @@
 export run=$1
-export version="v09_87_00"
+export version="v09_89_01_01"
 export jobs=$2
 
 # getting some paths
@@ -51,7 +51,7 @@ echo "<!-- Larsoft information -->           " >> $xml
 echo "<larsoft>                              " >> $xml
 echo "  <tag>&release;</tag>                 " >> $xml
 echo "  <qual>e26:prof</qual>                " >> $xml
-echo "  <local>/pnfs/icarus/scratch/users/mvicenzi/icaruscode_v09_87_00_gaincalibration_ingate.tar</local> " >> $xml
+echo "  <local>/pnfs/icarus/scratch/users/mvicenzi/icaruscode_v09_89_01_01_gaincalibration_ingate.tar</local> " >> $xml
 echo "</larsoft>                             " >> $xml
 
 echo "<!-- Project stages -->                " >> $xml

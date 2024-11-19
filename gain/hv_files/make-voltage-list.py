@@ -3,7 +3,7 @@ import sys, os
 import sqlite3
 import pandas as pd
 
-def readSqlitedb(database="/cvmfs/icarus.opensciencegrid.org/products/icarus/icarus_data/v09_78_00/icarus_data/database/ChannelMapICARUS.db", table="pmt_placements"):
+def readSqlitedb(database="/cvmfs/icarus.opensciencegrid.org/products/icarus/icarus_data/v09_79_01/icarus_data/database/ChannelMapICARUS_20230829.db",table="pmt_placements_29aug2023"):
 
     # Read sqlite query results into a pandas DataFrame
     con = sqlite3.connect(database)

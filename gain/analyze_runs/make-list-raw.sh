@@ -9,11 +9,11 @@ mkdir -p $path
 
 ### FOR STANDARD RUNS
 DEFNAME="${USER}_PMTgain_run${run}_offbeam_${limit}"
-COND="run_number=${run} AND data_tier=raw AND icarus_project.stage=daq AND (Data_Stream=offbeambnbminbias OR Data_Stream=offbeamnumiminbias) with limit ${limit}"
+COND="run_number=${run} AND data_tier=raw AND icarus_project.stage=daq AND (Data_Stream=offbeamminbiascalib OR Data_Stream=offbeambnbminbias OR Data_Stream=offbeamnumiminbias) with limit ${limit}"
 
 ### FOR LASER RUNS
 #DEFNAME="${USER}_PMTgain_run${run}_laser_${limit}"
-#COND="run_number=${run} AND data_tier raw AND icarus_project.stage=daq with limit ${limit}"
+#COND="run_number=${run} AND data_tier raw AND data_stream laser AND icarus_project.stage=daq with limit ${limit}"
 
 echo "Creating samweb definition ${DEFNAME}" 
 
