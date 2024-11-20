@@ -4,6 +4,7 @@ export path="/exp/icarus/data/users/${USER}/pmt-calibration/input"
 export list="${path}/files-run${run}.list"
 export def="${path}/dataset-run${run}.txt"
 export log="${path}/prestage-run${run}.txt"
+export errlist="file-locality-errors.list"
 
 mkdir -p $path
 
@@ -34,32 +35,50 @@ if test -f "$list"; then
     rm $list
 fi
 touch $list
+touch $errlist
 
 echo "Creating new file list"
 prestage=0
+errors=0
+id=0
 for file in $( samweb list-files ${COND} )
 do
-	echo $file
-        samwebLocFull=$(samweb locate-file $file | grep "enstore" | head -n 1)
-        fileLocPart=${samwebLocFull#enstore:}
+	#echo $id $file
+        samwebLocFull=$(samweb locate-file $file | head -n 1 )
+        fileLocPart=${samwebLocFull#*:}
         fileLoc=${fileLocPart%(*}
- 
-	if [ -n "$fileLoc" ]; then
-        	status=$(cat "${fileLoc}/.(get)($file)(locality)")
-        	checkOnline=$(echo $status | grep "ONLINE")
+    	
+	#echo $(samweb locate-file $file)
+	#echo $fileLocPart
+	#echo $fileLoc
 
+	if [ -n "$fileLoc" ]; then
+        	status=$(cat "${fileLoc}/.(get)($file)(locality)" 2>&1)
+		errcode=$?
+
+		if [ $errcode -ne 0 ]; then
+    			echo "ERROR: $status" >> $errlist
+                        ((errors++))
+                        ((id++))
+			continue
+		fi
+
+	       	checkOnline=$(echo $status | grep "ONLINE")
 		if [ -z "$checkOnline" ]; then
 			echo "... not on disk -> prestage needed!"
                 	((prestage++))
         	fi
     	fi
 
-	echo $( samweb get-file-access-url --schema=root --location=enstore $file | head -n 1) >> $list  
+	echo "$id: $( samweb get-file-access-url --schema=root $file | head -n 1 )"
+	echo $( samweb get-file-access-url --schema=root $file | head -n 1 ) >> $list  
+	((id++))
 done 
 
 export njobs=$( wc -l < $list )
 echo "Project has ${njobs} files"
 echo "${prestage} files need prestaging!"
+echo "${errors} files showed errors and were skipped!"
 
 thr=$(echo "$njobs" | awk '{printf "%d", 0.01*$1}')
 
