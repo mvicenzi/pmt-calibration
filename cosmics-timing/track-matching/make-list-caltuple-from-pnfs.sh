@@ -1,23 +1,27 @@
 export run=$1
-export stream=$2
-export path=$3
-export odir="/exp/icarus/app/users/${USER}/pmt-calibration/cosmics-timing/inputs"
+export path=$2
+export odir="/exp/icarus/data/users/${USER}/pmt-calibration/input_caltuples"
 
 #create directory (if not existing)
-#mkdir -p $odir
+mkdir -p $odir
 
 #loop through files and save in list
-list="${odir}/run${1}_tracks_${stream}_files.txt"
+list="${odir}/files-caltuple-run${run}.list"
 if test -f "$list"; then
     echo "$list exists. Removing old list"
     rm $list
 fi
 touch $list
 
-for file in $( find ${path} -print | egrep '\.root$' );
+id=0
+
+for file in $( find ${path} | egrep '\.root$' );
 do
-	xroot=$( pnfsToXRootD ${file} )
+	echo $file
+        xroot=$( pnfsToXRootD ${file} )
 	echo ${xroot} >> $list
+        echo "$id : ${xroot}"
+        ((id++))
 done
 
 export nfiles=$( wc -l < $list )

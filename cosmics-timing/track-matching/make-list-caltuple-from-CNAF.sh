@@ -1,13 +1,13 @@
 export run=$1
 export stream=$2
-export odir="/exp/icarus/app/users/${USER}/pmt-calibration/cosmics-timing/inputs"
+export odir="/exp/icarus/data/users/${USER}/pmt-calibration/input_caltuples"
 export sdir="/pnfs/icarus/scratch/users/${USER}/CNAF_runs/${run}"
 
 #create directory (if not existing)
 mkdir -p ${sdir}
 
 #loop through files and save in list
-list="${odir}/run${1}_tracks_${stream}_files.txt"
+list="${odir}/files-caltuple-run${run}.list"
 if test -f "$list"; then
     echo "$list exists. Removing old list"
     rm $list
