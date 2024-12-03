@@ -50,6 +50,10 @@ void selectTracks(
 {
     
   bool _LIMIT = false;
+  int _MAX_FILES = 100; 
+  double START_TRACK_Y = 125.;
+  double END_TRACK_Y = -175.; 
+  double PE_CUT = 50; 
   double MAX_DT_US = 10;
   double MAX_DZ_CM = 30;
  
@@ -73,20 +77,15 @@ void selectTracks(
   TFile *outfile = new TFile(outfilename.c_str(), "RECREATE");
   std::vector<TTree *> outtrees;
 
-  int runnum, event, cryo, flash_id;
+  int runnum, ev, cryo, flash_id;
   float flash_time;
-  float flash_y, flash_width_y;
-  float flash_z, flash_width_z;
+  float flash_y, flash_z;
+  int flash_nhits;
+  float track_time;
   float track_charge_z;
-  float track_start_x;
-  float track_start_y;
-  float track_start_z;
-  float track_end_x;
-  float track_end_y;
-  float track_end_z;
-  float track_dir_x;
-  float track_dir_y;
-  float track_dir_z;
+  float track_start_x, track_start_y, track_start_z;
+  float track_end_x, track_end_y, track_end_z;
+  float track_dir_x, track_dir_y, track_dir_z;
   float track_length;
   std::vector<int> channel_id;
   std::vector<double> pmt_time;
@@ -102,14 +101,13 @@ void selectTracks(
     TTree *t = new TTree(label.c_str(),info.c_str());
 
     t->Branch("run",&runnum);
-    t->Branch("event",&event);
+    t->Branch("event",&ev);
     t->Branch("cryo",&cryo);
     t->Branch("flash_id",&flash_id);
     t->Branch("flash_time",&flash_time);
     t->Branch("flash_y",&flash_y);
-    t->Branch("flash_width_y",&flash_width_y);
     t->Branch("flash_z",&flash_z);
-    t->Branch("flash_width_z",&flash_width_z);
+    t->Branch("track_T0",&track_time);
     t->Branch("track_charge_z",&track_charge_z);
     t->Branch("track_start_x",&track_start_x);
     t->Branch("track_start_y",&track_start_y);
@@ -121,6 +119,7 @@ void selectTracks(
     t->Branch("track_dir_y",&track_dir_y);
     t->Branch("track_dir_z",&track_dir_z);
     t->Branch("track_length",&track_length);
+    t->Branch("flash_nhits",&flash_nhits);
     t->Branch("channel_id",&channel_id);
     t->Branch("pmt_time",&pmt_time);
     t->Branch("pmt_pe",&pmt_pe);
@@ -135,6 +134,7 @@ void selectTracks(
   //Read the list of files 
   //NB: keep files separated per run because we only use the event number to match
   std::vector<std::string> filenames = makeFilesVector( fileList );
+  std::cout << "There are " << filenames.size() << " files in the list!" << std::endl;
 
   // Correction map to-be-removed. 
   // If "" is passed as argument that particular level of correction is not removed
@@ -146,7 +146,7 @@ void selectTracks(
     RM_cosmics = ""; 
   }
 
-  std::cout << "Preparing to remove corrections..." << std::endl;
+  std::cout << "\nPreparing to REMOVE corrections..." << std::endl;
 
   std::map<int, double> rmCorrectionsMap;
   loadPMTTimeCorrections(
@@ -165,7 +165,7 @@ void selectTracks(
     ADD_cosmics = ""; 
   }
     
-  std::cout << "Preparing to add corrections..." << std::endl;
+  std::cout << "\nPreparing to ADD corrections..." << std::endl;
   
   std::map<int, double> addCorrectionsMap;
   loadPMTTimeCorrections(
@@ -175,160 +175,175 @@ void selectTracks(
   ); 
 
   // -----------------------------------------------------------------------------------------------------
-/*
-  // Now let the action begin 
+
+  std::cout << "\nNow buckle-up and let the action begin!" << std::endl;  
   TFile *tfile;
   int matches = 0;
   
-  for(  size_t idxFile=0; idxFile<filenames.size(); idxFile++ ){   
+  for( size_t idxFile=0; idxFile<filenames.size(); idxFile++ ){   
 
-    if( _LIMIT && idxFile > 100 ){ break; }
+    // limit the number of files to process, if enabled
+    if( _LIMIT && idxFile > _MAX_FILES ){ break; }
 
       std::string filename = filenames[idxFile];
-      std::cout << "Processing file #" << idxFile << " name: " << filename << std::endl;
+      std::cout << "Processing file #" << idxFile << " : " << filename << std::endl;
 
       tfile = TFile::Open(filename.c_str(), "READ");
-
       if( !tfile || tfile->IsZombie() ){ 
         std::cout << "FILE IS NOT RESPONSIVE, SKIP IT" << std::endl;
         continue; 
       }
 		
    // Read TPC Info
-   auto myTPCMap = readTPCInfo( chargeTTrees, tfile );
+   auto myTPCMap = readTPCInfo( chargeTTrees, tfile, START_TRACK_Y, END_TRACK_Y );
 
    // Read the PMT Info
-   auto myPMTMap = readPMTInfo( lightTtrees, tfile, 300., rmCorrectionsMap, addCorrectionsMap);
-        
+   auto myPMTMap = readPMTInfo( lightTtrees, tfile, PE_CUT, rmCorrectionsMap, addCorrectionsMap);
+
    // Loop on the events
-        for( auto const & [ event, tracks ] : myTPCMap ){
+   for( auto const & [ event, tracks ] : myTPCMap ){
+    
+     std::vector<OpFlash> flashes = myPMTMap[event];
 
-            std::vector<OpFlash> flashes = myPMTMap[event];
+     // And loop on the tracks
+     for( const Track & track : tracks ){
 
-            // And loop on the tracks
-            for( const Track & track : tracks ){
+       for ( size_t idx=0 ;idx<flashes.size(); idx++ ){
 
-                for ( size_t idx=0 ;idx<flashes.size(); idx++ ){
+         OpFlash const& flash = flashes[idx];
 
-                    OpFlash const& flash = flashes[idx];
+         // Criteria followed to select a match between a flash and a track
+         bool selCryo     = track.cryo == flash.cryostat;
+         bool selPosition = fabs(track.chargeCenter.Z-flash.flashZ)<MAX_DZ_CM;
+         bool selTiming   = (track.T0/1000.-flash.time)>0 && (track.T0/1000.-flash.time)<MAX_DT_US;
 
-                    // Criteria followed to select a match between a flash and a track
-                    bool selCryo     = track.cryo == flash.cryostat;
-                    bool selPosition = fabs(track.chargeCenter.Z-flash.flashZ)<MAX_DZ_CM;
-                    bool selTiming   = (track.T0/1000.-flash.time)>0 && (track.T0/1000.-flash.time)<MAX_DT_US;
+         if( selPosition && selTiming && selCryo ) {
+  
+           // clear vectors from the previous match
+           channel_id.clear();
+           pmt_time.clear();
+           pmt_pe.clear();
+           pmt_amplitude.clear();  
+           pmt_x.clear();  
+           pmt_y.clear();  
+           pmt_z.clear();  
+           
+           // save flash-track match variables for output tree
+           // these are all variables immediately available
+           runnum = std::stoi(run);
+           ev = event;
+           cryo = track.cryo;
+           flash_id = flash.flashID;
+           flash_time = flash.time;
+           flash_y = flash.flashY;
+           flash_z = flash.flashZ;
+           flash_nhits = flash.ophits.size();
+           track_time = track.T0;
+           track_charge_z = track.chargeCenter.Z;
+           track_start_x = track.start.X;
+           track_start_y = track.start.Y;
+           track_start_z = track.start.Z;
+           track_end_x = track.end.X;
+           track_end_y = track.end.Y;
+           track_end_z = track.end.Z;
+           track_dir_x = track.dir.X;
+           track_dir_y = track.dir.Y;
+           track_dir_z = track.dir.Z;
+           track_length = track.length;
+           
+           // save the first ophit for each pmt in the flash
+           // PE_CUT applies, so tune it for how much to save
+           for( auto ophit : flash.ophits ){ 
+             channel_id.push_back(ophit.channel_id);
+             pmt_time.push_back(ophit.startTime);
+             pmt_pe.push_back(ophit.pe);
+             pmt_amplitude.push_back(ophit.amplitude);
+             pmt_x.push_back(ophit.pmt.X);
+             pmt_y.push_back(ophit.pmt.Y);
+             pmt_z.push_back(ophit.pmt.Z);
+           }
+      
+           // TODO FIXME: is this important?
+           // Ignore this match if there are no PMTs at the highest Y coordinate 
+           // (might happen for rare case of misreconstruction or mistmatch)
+           // for( auto ophit : flash.ophits ){ 
+           //  if( ophit.pmt.Y > 80 )
+           //    selOpHits.push_back( ophit );
+           // }
+           // if( selOpHits.size() == 0 ){
+             // Match the flash only once 
+           //  flashes.erase( flashes.begin()+idx );
+           //  break;
+           // }
 
-                    if( selPosition && selTiming && selCryo ) {
+           // TODO FIXME: computing the mean time per y COULD here would make things easier!
+           // however, it means a new ROOT file for every set of corrections...
+           // this would potentially lead to much data to save...
+           // FOR NOW: stick to do that in the python code, keeping more flexibility         
+           // Work on the mean time! 
+           // We do the calculation separated per wall within the same cryostat 
+           // and then mean the two sides
+           /*std::map< std::pair<double, double>, std::vector<OpHit> > mapOpHitSide;
+           std::map<double, double> meanTimeMap;
+           for( auto ophit : flash.ophits ){
 
-                        //Find the earliest OpHit in the flash at the highest PMT Y coordinate
-                        std::vector<OpHit> selOpHits;
-                        for( auto ophit : flash.ophits ){ 
-                            if( ophit.pmt.Y > 80 )
-                                selOpHits.push_back( ophit );
-                        }
+             std::pair key = std::make_pair( ophit.pmt.X, ophit.pmt.Y );
+             mapOpHitSide[key].push_back( ophit );
+           }
 
-                        // Ignore this match if there are no PMTs at the highest Y coordinate 
-                        // (might happen for rare case of misreconstruction or mistmatch)
-                        if( selOpHits.size() == 0 ){
-                            // Match the flash only once 
-                            flashes.erase( flashes.begin()+idx );
-                            break;
-                        }
+           for( auto const & [key, ophits] : mapOpHitSide ){
 
-                        OpHit firstOphit = *std::min_element( selOpHits.begin(), selOpHits.end(), 
-                                []( OpHit const &a, OpHit const &b ){ return a.startTime < b.startTime; });
-                        
-                        // Work on the mean time! 
-                        // We do the calculation separated per wall within the same cryostat 
-                        // and then mean the two sides
-                        std::map< std::pair<double, double>, std::vector<OpHit> > mapOpHitSide;
-                        std::map<double, double> meanTimeMap;
-                        for( auto ophit : flash.ophits ){
+             // Keep only the last side
+             if( key.second > 80 ){ continue; }
 
-                            std::pair key = std::make_pair( ophit.pmt.X, ophit.pmt.Y );
-                            mapOpHitSide[key].push_back( ophit );
-                        }
+             if( ophits.size() ==0 ){ continue; }
 
-                        for( auto const & [key, ophits] : mapOpHitSide ){
+             // Meantime Not weighed 
+             double time = std::accumulate( ophits.begin(), ophits.end(), 0.0, 
+                           []( double sum, OpHit const & a ){ return sum+=a.startTime; }) / ophits.size();
 
-                            // Keep only the last side
-                            if( key.second > 80 ){ continue; }
+             meanTimeMap[ key.first ] = time ;
 
-                            if( ophits.size() ==0 ){ continue; }
+           }
 
-                            // Meantime Not weighed 
-                            double time = std::accumulate( ophits.begin(), ophits.end(), 0.0, 
-                                []( double sum, OpHit const & a ){ return sum+=a.startTime; }) / ophits.size();
+           if( meanTimeMap.size() !=2  ){
+             // Match the flash only once 
+             flashes.erase( flashes.begin()+idx );
+             break;
+           }
 
-                            meanTimeMap[ key.first ] = time ;
+           double meanTime = 0;
+           for( auto const & [ x, time ] : meanTimeMap ){
+             meanTime += time;
+           }
+           meanTime /= meanTimeMap.size();
+           */
 
-                        }
+           outtrees[cryo]->Fill();
+	   matches++;
 
-                        if( meanTimeMap.size() !=2  ){
-                            // Match the flash only once 
-                            flashes.erase( flashes.begin()+idx );
-                            break;
-                        }
+           // Match the flash only once and erase it from the list if 
+           // matching is successufl
+           flashes.erase( flashes.begin()+idx );
+           break;
 
-                        double meanTime = 0;
-                        for( auto const & [ x, time ] : meanTimeMap ){
-                            meanTime += time;
-                        }
+           } // end if matches 
 
-                        meanTime /= meanTimeMap.size();
+        } // end flashes
 
-                        // Here entries are written. One line for every successful match
-                         outf << run << ","
-                         << event << ","
-                         << track.cryo << ","
-                         << flash.flashID << ","
-                         << flash.time << ","
-                         << track.T0 << ","
-                         << track.chargeCenter.Z << ","
-                         << flash.flashZ << ","
-                         << flash.flashY << ","
-                         << firstOphit.startTime <<","
-                         << meanTime << ","
-                         << firstOphit.pe << ","
-                         << firstOphit.channel_id << ", "
-                         << firstOphit.pmt.X << ","
-                         << firstOphit.pmt.Y << ","
-                         << firstOphit.pmt.Z << ","
-                         << pmtCorrectionsMap[firstOphit.channel_id] << ","
-                         << track.start.X << ","
-                         << track.start.Y << ","
-                         << track.start.Z << ","
-                         << track.end.X << ","
-                         << track.end.Y << ","
-                         << track.end.Z << ","
-                         << track.dir.X << ","
-                         << track.dir.Y << ","
-                         << track.dir.Z << ","
-                         << track.length
-                         << std::endl;
+      } // end cathode crossing tracks in event
 
-			matches++;
+    } // Event looper (follow the track loop)
 
-                        // Match the flash only once and erase it from the list if 
-                        // matching is successufl
-                        flashes.erase( flashes.begin()+idx );
-                        break;
+    tfile->Close();
 
-                    } // end if matches 
+  } // end loop over files
 
-                } // end flashes
-
-            } // end cathode crossing tracks in event
-
-        } // Event looper (follow the track loop)
-
-        tfile->Close();
-
-    } // end loop over files
-*/
-
+  outfile->cd();
+  for(auto t : outtrees) t->Write(); 
   outfile->Close();
     
-  // std::cout << matches << " flash/track matches found" << std::endl;
+  std::cout << matches << " flash/track matches found" << std::endl;
   std::cout << "\nselectTracks() macro: ALL DONE" << std::endl;
   gApplication->Terminate(0);   
 }

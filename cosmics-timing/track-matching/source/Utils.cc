@@ -159,7 +159,7 @@ void loadPMTTimeCorrections(
 
     if( !laserCorrections.empty() ){
 
-	std::cout << "loadPMTTimeCorrections: accessing " << laserCorrections << std::endl;
+	std::cout << "loadPMTTimeCorrections: " << laserCorrections << std::endl;
 
         ifile.open( laserCorrections, ios::in );
         std::string line;
@@ -193,7 +193,7 @@ void loadPMTTimeCorrections(
 
     if( !muonsCosmicCorrections.empty() ){
         
-	std::cout << "loadPMTTimeCorrections: accessing " << muonsCosmicCorrections << std::endl;
+	std::cout << "loadPMTTimeCorrections: " << muonsCosmicCorrections << std::endl;
 
         ifile.open( muonsCosmicCorrections, ios::in );
         std::string line;
@@ -256,7 +256,7 @@ bool cathodeCross(int cryoidx, float startx, float endx){
 
 
 std::map<int, std::vector<Track>> 
-    readTPCInfo( const std::vector<std::string> & ttreename, TFile *myTFile ){
+    readTPCInfo( const std::vector<std::string> & ttreename, TFile *myTFile, const double startTrackY, const double endTrackY ){
 
     std::map<int, std::vector<Track>> myTrackMap; 
 		
@@ -313,7 +313,7 @@ std::map<int, std::vector<Track>>
                 // Keep only the tracks that are crossing the cathode at steep angle
                 // This also forces the track to be longer than 300cm
                 if( cathodeCross(cryoidx, *startx, *endx) &&
-		    (*starty)>125. && (*endy)<-175.) {
+		    (*starty)>startTrackY && (*endy)<endTrackY ) {
 
                     Track thisTrack{ 
                         cryoidx,
@@ -364,8 +364,7 @@ struct OpFlash {
 
 std::map<int, std::vector<OpFlash>>
     readPMTInfo( const std::vector<std::string> & ttreename, 
-        TFile *myTFile, const float & peCut, std::map<int, double> pmtCorrectionsMap ){
-
+        TFile *myTFile, const float & peCut, std::map<int, double> rmCorrectionsMap, std::map<int,double> addCorrectionsMap ){
 
     std::map<int, std::vector<OpFlash>> myFlashMap; 
 
@@ -391,13 +390,16 @@ std::map<int, std::vector<OpFlash>>
 
             for( unsigned int pmtIdx=0; pmtIdx<360; pmtIdx++ ){
                     
-                // Reduce a little bit the load and save only the PMTs with the 
-                //  correct amount of PEs  
+                // Reduce a little bit the load and save only the PMTs with the correct amount of PEs 
+                // also skip the empty channels in the flash (time is 0, sigh) 
                 if( ((*flashPMTPe)[pmtIdx] < peCut) || ((*flashPMTTime)[pmtIdx] == 0.) ){ continue; } 
+
 
                     OpHit thisOpHit{ 
                         pmtIdx, 
-                        (*flashPMTTime)[pmtIdx] + pmtCorrectionsMap[pmtIdx], 
+                        // corrections are already negative: so add with +, remove with -
+                        // if no add or no removal, the corresponding map is empty
+                        (*flashPMTTime)[pmtIdx] + addCorrectionsMap[pmtIdx] - rmCorrectionsMap[pmtIdx], 
                         (*flashPMTPe)[pmtIdx], 
                         (*flashPMTAmpl)[pmtIdx],
                         {(*pmtX)[pmtIdx], (*pmtY)[pmtIdx], (*pmtZ)[pmtIdx]} 
@@ -406,7 +408,6 @@ std::map<int, std::vector<OpFlash>>
                     opHits.push_back( thisOpHit );
 
             } //end loop over opHits 
-
 
 
             OpFlash thisFlash{ (*flashID), cryoidx, (*flashTime), (*flashZ), (*flashY), opHits };
