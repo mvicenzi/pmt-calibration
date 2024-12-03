@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -137,83 +138,33 @@ std::vector<std::string>
         Read a list of files from a list with name "filename"
         return the same files from the list, but saved in a vector of string
         */
-
         std::vector<std::string> filesList;
-
         ifstream ifile(filename.c_str());
         std::string line; 
 
         while ( std::getline( ifile, line ) ) {
-
             filesList.push_back(line);
         }
 
         ifile.close();
-
         return filesList;
-
 };
 
 void loadPMTTimeCorrections( 
-    std::string const & channelmap,
     std::string const & laserCorrections,
     std::string const & muonsCosmicCorrections, 
     std::map<int, double> & timeMap ){
 
     std::ifstream ifile;
 
-    //crate based corrections 
-    std::map<std::string, double> timeCorr{
-        {"EE-BOT", -82.205},
-        {"EE-TOP", -82.02},
-        {"EW-BOT", -81.045},
-        {"EW-TOP", -81.185},
-        {"WE-BOT", -76.54},
-        {"WE-TOP", -83.615},
-        {"WW-BOT", -76.005},
-        {"WW-TOP", -76.91}
-    };
-    
-    if( !channelmap.empty() ){
-        std::ifstream ifile;
-        ifile.open( channelmap, ios::in );
-
-        std::string line;
-
-        //This is th first line
-        std::getline(ifile, line);
-
-        while( std::getline(ifile, line) ){
-
-            std::stringstream ss(line);
-            std::string stringItem;
-            std::vector<std::string> row;
-
-            while( std::getline(ss, stringItem, ',') ){
-                row.push_back( stringItem );
-            }
-
-            //Here we save the items that we want from the row
-            int channelId = stoi( row[15] );
-            std::string crate =  row[8].substr(0,6);
-
-            timeMap[ channelId ] -= timeCorr[crate]/1000.;
-        }
-
-        ifile.close();
-
-    } else {
-        std::cout << "loadPMTTimeCorrections: skip crate corrections" << std::endl;
-    }
-
-
     if( !laserCorrections.empty() ){
 
-        ifile.open( laserCorrections, ios::in );
+	std::cout << "loadPMTTimeCorrections: accessing " << laserCorrections << std::endl;
 
+        ifile.open( laserCorrections, ios::in );
         std::string line;
 
-        //This is th first line
+        //This is the first line, so the header
         std::getline(ifile, line);
 
         while( std::getline(ifile, line) ){
@@ -228,16 +179,9 @@ void loadPMTTimeCorrections(
 
             //Here we save the items that we want from the row
             int channelId = stoi( row[0] );
-            double electronTransitTime = stod( row[6] );
+            double electronTransitTime = stod( row[5] );
             
-            double triggerSpaceChannelDelay = 25;
-            if( channelId < 180) 
-                triggerSpaceChannelDelay=30;
-
             timeMap[ channelId ] += ((-electronTransitTime)/1000.);
-
-            //std::cout 
-
         }
 
         ifile.close();
@@ -249,11 +193,12 @@ void loadPMTTimeCorrections(
 
     if( !muonsCosmicCorrections.empty() ){
         
-        ifile.open( muonsCosmicCorrections, ios::in );
+	std::cout << "loadPMTTimeCorrections: accessing " << muonsCosmicCorrections << std::endl;
 
+        ifile.open( muonsCosmicCorrections, ios::in );
         std::string line;
 
-        //This is th first line
+        //This is the first line, so the header
         std::getline(ifile, line);
 
         while( std::getline(ifile, line) ){
@@ -268,9 +213,9 @@ void loadPMTTimeCorrections(
 
             //Here we save the items that we want from the row
             int channelId = stoi( row[0] );
-            double muonResidual = stod( row[2] );
+            double muonResidual = stod( row[6] );
             
-            timeMap[ channelId ] += muonResidual/1000.;
+            timeMap[ channelId ] += ((-muonResidual)/1000.);
         }
 
         ifile.close();
@@ -278,7 +223,6 @@ void loadPMTTimeCorrections(
     } else {
         std::cout << "loadPMTTimeCorrections: skip muon cosmics corrections" << std::endl;
     }
-
 
 };
 

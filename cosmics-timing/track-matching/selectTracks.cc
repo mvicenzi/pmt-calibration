@@ -1,28 +1,29 @@
 /////////////////////////////////////////////////////////////////////////////////////////// 
 // macro selectTracks()
 // 
-// Date 06/21/2023 
+// Date 12/02/2024 
 // Author: M. Vicenzi (BNL), based off work from A. Scarpelli (BNL)
 // mailto: mvicenzi@bnl.gov
 // 
 // Macro to select TPC reconstructed cathode-crossing tracks that match with a PMT reconstructed flash.
 // In combination with notebooks/pmt_cosmic_timing.ipynb, it can be used to produce PMT timing corrections 
 // 
-// Input: The name of the list with the path pointing to the calibration ntuples files containing the TTree 
-//        with TPC,PMT and CRT information produced at the end of the stage1
-// Output: The name of the .csv file reporting the result of the selection to be fed into notebooks
+// Input: 
+//   - list with the paths of calibration ntuples files containing the TTree with TPC and PMT information
+//   - optional removal of previously applied corrections from timing database
+//   - optional addition of corrections from timing database
+// Output: root file with the result of the selection to be fed into notebooks
 //
 // To execute the macro:
 //     
-//      root -l loadLib.cc selectTracks.cc( <input>, <output> ) 
+//      root -l loadLib.cc selectTracks.cc( <input1>, <input2>, ... ) 
 // 
-// NB: Calibration ntuples can be enough if the latest/proper timing corrections from laser
-//     measurement have been correctly applied. This is true from recent data, so for old data you need
-//     add it now by passing the correct table. 
-//     If some were applied and you want to change them or you simply don't know... good luck!
-//
+// NB: Sometimes calibration ntuples are not produced with the latest/proper timing corrections.
+//     This is true for recent data if the calibration database was not yet updated.
+//     The best way is to remove all corrections (except cable ones) and re-apply them.
+//     Re-applying them can be also done in the python notebooks.
+//     
 ///////////////////////////////////////////////////////////////////////////////////////////
-
 
 #include <stdio.h>
 
@@ -30,107 +31,176 @@
 #include "Utils.h"
 
 #include "TFile.h"
+#include "TTree.h"
 
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "TH1D.h"
-#include "TH2D.h"
-
-void selectTracks( 
-    std::string const & run="9337"
-){
+void selectTracks(
+  std::string const & run = "",        // run number
+  bool const & _REMOVE = true,         // remove corrections?
+  std::string RM_laser = "",   // path of to-be-removed laser corrections
+  std::string RM_cosmics = "", // path of to-be-removed cosmics corrections
+  bool const & _ADD = false,           // add corrections?
+  std::string ADD_laser = "",  // path of to-be-added laser corrections
+  std::string ADD_cosmics = "" // path of to-be-added cosmics corrections
+  )
+{
+    
+  bool _LIMIT = false;
+  double MAX_DT_US = 10;
+  double MAX_DZ_CM = 30;
  
-    std::string const & fileList="inputs/run" + run + "_tracks_BNBMAJORITY_files.txt";
-    std::string const & outfilename="output/run" + run + "_matched_light_tracks.txt";
+  std::string const & fileList="/exp/icarus/data/users/mvicenzi/pmt-calibration/input_caltuples/files-caltuple-run" + run + ".list";
+  std::string const & outfilename="/exp/icarus/data/users/mvicenzi/pmt-calibration/track_matches/run" + run + "_matched_light_tracks.root";
 
-    bool _LIMIT = false;
-    double MAX_DT_US = 10;
-    double MAX_DZ_CM = 30;
+  std::cout << "Input list: " << fileList << std::endl;
+  std::cout << "Output: " << outfilename << std::endl;
+  
+  // define the ttrees
+  std::vector< std::string > lightTtrees{ "simpleLightAna/opflashCryoE_flashtree", 
+                                          "simpleLightAna/opflashCryoW_flashtree"  }; // keep the order
 
-    // Output file 
-    ofstream outf( outfilename.c_str() );
-    // Header 
-    outf << "run" << ","
-         << "event" << ","
-         << "cryo" << ","
-         << "flashID" << ","
-         << "flashTime" << ","
-         << "trackTime" << ","
-         << "trackChargeZ" << ","
-         << "flashLightZ" << ","
-         << "flashLightY" << ","
-         << "firstOpHitTime" << ","
-         << "meanTime" << ","
-         << "firstOpHitPE" << ","
-         << "firstOpHitChannel" << ", "
-         << "firstOpHitX" << ","
-         << "firstOpHitY" << ","
-         << "firstOpHitZ" << ","
-         << "timeCorr" << ","
-         << "trackStartX" << ","
-         << "trackStartY" << ","
-         << "trackStartZ" << ","
-         << "trackEndX" << ","
-         << "trackEndY" << ","
-         << "trackEndZ" << ","
-         << "trackDirX" << ","
-         << "trackDirY" << ","
-         << "trackDirZ" << ","
-         << "trackLenght"
-         << std::endl;
+  std::vector<std::string >  chargeTTrees{ "caloskimE/TrackCaloSkim", 
+                                           "caloskimW/TrackCaloSkim" }; // keep the order
 
-    //Read the list of files 
-    //NB: keep files separated per run because we only use the event number to match
-    std::vector<std::string> filenames = makeFilesVector( fileList );
+  std::vector<std::string >  matchTTrees{ "trackLightMatchE",
+                                          "trackLightMatchW" }; // keep the order
 
-    // Define the ttrees
-    std::vector< std::string > lightTtrees{ "simpleLightAna/opflashCryoE_flashtree", 
-                                            "simpleLightAna/opflashCryoW_flashtree"  }; // keep the order
+  // output file 
+  TFile *outfile = new TFile(outfilename.c_str(), "RECREATE");
+  std::vector<TTree *> outtrees;
 
-    std::vector<std::string >  chargeTTrees{ "caloskimE/TrackCaloSkim", 
-                                             "caloskimW/TrackCaloSkim" }; // keep the order
+  int runnum, event, cryo, flash_id;
+  float flash_time;
+  float flash_y, flash_width_y;
+  float flash_z, flash_width_z;
+  float track_charge_z;
+  float track_start_x;
+  float track_start_y;
+  float track_start_z;
+  float track_end_x;
+  float track_end_y;
+  float track_end_z;
+  float track_dir_x;
+  float track_dir_y;
+  float track_dir_z;
+  float track_length;
+  std::vector<int> channel_id;
+  std::vector<double> pmt_time;
+  std::vector<double> pmt_pe;
+  std::vector<double> pmt_amplitude;  
+  std::vector<double> pmt_x;  
+  std::vector<double> pmt_y;  
+  std::vector<double> pmt_z;  
 
-    // Correction map applied. If "" is passed as argument that particular level of correction is not appleid
-    // Input is a .csv file mapping the value of the correction to the PMT channelID 
-    // Result is stored inside pmtCorrectionsMap
-    std::map<int, double> pmtCorrectionsMap;
-    loadPMTTimeCorrections(
-        "", // << Hardware/cable corrections (for the sample considered we took care of it during decoding)
-        "",//"/exp/icarus/app/users/mvicenzi/cosmics-timing/inputs/laser_time_corrections_20220408.csv",  //<< Laser equalization
-	"", //<< Cosmic muons based fine tuning of the above correction  
-        pmtCorrectionsMap
-    ); 
+  for(auto const &label : matchTTrees)
+  {
+    std::string info = "TTree for PMT-TPC matched tracks";
+    TTree *t = new TTree(label.c_str(),info.c_str());
 
+    t->Branch("run",&runnum);
+    t->Branch("event",&event);
+    t->Branch("cryo",&cryo);
+    t->Branch("flash_id",&flash_id);
+    t->Branch("flash_time",&flash_time);
+    t->Branch("flash_y",&flash_y);
+    t->Branch("flash_width_y",&flash_width_y);
+    t->Branch("flash_z",&flash_z);
+    t->Branch("flash_width_z",&flash_width_z);
+    t->Branch("track_charge_z",&track_charge_z);
+    t->Branch("track_start_x",&track_start_x);
+    t->Branch("track_start_y",&track_start_y);
+    t->Branch("track_start_z",&track_start_z);
+    t->Branch("track_end_x",&track_end_x);
+    t->Branch("track_end_y",&track_end_y);
+    t->Branch("track_end_z",&track_end_z);
+    t->Branch("track_dir_x",&track_dir_x);
+    t->Branch("track_dir_y",&track_dir_y);
+    t->Branch("track_dir_z",&track_dir_z);
+    t->Branch("track_length",&track_length);
+    t->Branch("channel_id",&channel_id);
+    t->Branch("pmt_time",&pmt_time);
+    t->Branch("pmt_pe",&pmt_pe);
+    t->Branch("pmt_amplitude",&pmt_amplitude);
+    t->Branch("pmt_x",&pmt_x);
+    t->Branch("pmt_y",&pmt_y);
+    t->Branch("pmt_z",&pmt_z);
+   
+    outtrees.push_back(t);
+  }
+  
+  //Read the list of files 
+  //NB: keep files separated per run because we only use the event number to match
+  std::vector<std::string> filenames = makeFilesVector( fileList );
 
-    // Now let the action begin 
-    TFile *tfile;
-    int matches = 0;
-    for(  size_t idxFile=0; idxFile<filenames.size(); idxFile++ ){   
+  // Correction map to-be-removed. 
+  // If "" is passed as argument that particular level of correction is not removed
+  // Input is a .csv file mapping the value of the correction to the PMT channelID 
+  // Result is stored inside rmCorrectionsMap
+    
+  if( !_REMOVE ){ //if NO REMOVAL
+    RM_laser = "";  
+    RM_cosmics = ""; 
+  }
 
-        if( _LIMIT && idxFile > 100 ){ break; }
+  std::cout << "Preparing to remove corrections..." << std::endl;
 
-        std::string filename = filenames[idxFile];
+  std::map<int, double> rmCorrectionsMap;
+  loadPMTTimeCorrections(
+    RM_laser,   // laser equalization
+    RM_cosmics, // cosmics equalization  
+    rmCorrectionsMap
+  ); 
 
-        std::cout << "Processing file #" << idxFile << " name: " << filename << std::endl;
+  // Correction map to-be-applied. 
+  // If "" is passed as argument that particular level of correction is not applied
+  // Input is a .csv file mapping the value of the correction to the PMT channelID 
+  // Result is stored inside addCorrectionsMap
+    
+  if( !_ADD ){ //if NO ADD
+    ADD_laser = "";  
+    ADD_cosmics = ""; 
+  }
+    
+  std::cout << "Preparing to add corrections..." << std::endl;
+  
+  std::map<int, double> addCorrectionsMap;
+  loadPMTTimeCorrections(
+    ADD_laser,   // laser equalization
+    ADD_cosmics, // cosmics equalization  
+    addCorrectionsMap
+  ); 
 
-        tfile = TFile::Open(filename.c_str(), "READ");
+  // -----------------------------------------------------------------------------------------------------
+/*
+  // Now let the action begin 
+  TFile *tfile;
+  int matches = 0;
+  
+  for(  size_t idxFile=0; idxFile<filenames.size(); idxFile++ ){   
 
-        if( !tfile || tfile->IsZombie() ){ 
-          std::cout << "FILE IS NOT RESPONSIVE, SKIP IT" << std::endl;
-          continue; 
-        }
+    if( _LIMIT && idxFile > 100 ){ break; }
 
+      std::string filename = filenames[idxFile];
+      std::cout << "Processing file #" << idxFile << " name: " << filename << std::endl;
+
+      tfile = TFile::Open(filename.c_str(), "READ");
+
+      if( !tfile || tfile->IsZombie() ){ 
+        std::cout << "FILE IS NOT RESPONSIVE, SKIP IT" << std::endl;
+        continue; 
+      }
 		
-        // Read TPC Info
-        auto myTPCMap = readTPCInfo( chargeTTrees, tfile );
+   // Read TPC Info
+   auto myTPCMap = readTPCInfo( chargeTTrees, tfile );
 
-        // Read the PMT Info
-	auto myPMTMap = readPMTInfo( lightTtrees, tfile, 300., pmtCorrectionsMap);
+   // Read the PMT Info
+   auto myPMTMap = readPMTInfo( lightTtrees, tfile, 300., rmCorrectionsMap, addCorrectionsMap);
         
-        // Loop on the events
+   // Loop on the events
         for( auto const & [ event, tracks ] : myTPCMap ){
 
             std::vector<OpFlash> flashes = myPMTMap[event];
@@ -254,11 +324,11 @@ void selectTracks(
         tfile->Close();
 
     } // end loop over files
+*/
 
-
-    outf.close();
+  outfile->Close();
     
-    std::cout << matches << " flash/track matches found" << std::endl;
-    std::cout << "\nselectTracks() macro: ALL DONE" << std::endl;
-    
+  // std::cout << matches << " flash/track matches found" << std::endl;
+  std::cout << "\nselectTracks() macro: ALL DONE" << std::endl;
+  gApplication->Terminate(0);   
 }

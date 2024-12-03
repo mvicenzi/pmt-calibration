@@ -35,10 +35,9 @@
 
     bool flashInTime( double const & flashTime, Trigger const & trigger );
 
-    void loadPMTTimeCorrections( std::string const & channelmap ="",
-                        std::string const & laserCorrections="",
-                        std::string const & muonsCosmicCorrections="", 
-                        std::map<int, double> & timeMap );
+    void loadPMTTimeCorrections( std::string const & laserCorrections="",
+                                 std::string const & muonsCosmicCorrections="", 
+                                 std::map<int, double> & timeMap );
 
     bool hasCRTHit( const OpFlash & flash, 
                     const std::vector<CRTHit> & crtHits,
