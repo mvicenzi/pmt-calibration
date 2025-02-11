@@ -15,6 +15,7 @@ do
 	fi	
 	
 	ifdh cp ${file} ${odir}/pulseDistributionHist_${ID}_run${run}.root
+	#cp ${file} ${odir}/pulseDistributionHist_${ID}_run${run}.root
 
   	((ID++))
 done

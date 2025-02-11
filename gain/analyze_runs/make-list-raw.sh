@@ -10,6 +10,7 @@ mkdir -p $path
 
 ### FOR STANDARD RUNS
 DEFNAME="${USER}_PMTgain_run${run}_offbeam_${limit}"
+#COND="run_number=${run} AND data_tier=raw AND icarus_project.stage=daq AND (Data_Stream=unknown) with limit ${limit}"
 COND="run_number=${run} AND data_tier=raw AND icarus_project.stage=daq AND (Data_Stream=offbeamminbiascalib OR Data_Stream=offbeambnbminbias OR Data_Stream=offbeamnumiminbias) with limit ${limit}"
 
 ### FOR LASER RUNS
@@ -85,7 +86,7 @@ thr=$(echo "$njobs" | awk '{printf "%d", 0.01*$1}')
 if ((prestage > thr)); then
 	echo "Prestaging files..." 
 	echo "This can take a long time, but you can close this terminal & check status on webpage!"
-	nohup samweb prestage-dataset --defname=${DEFNAME} --touch > ${log} 2>&1 &
+	nohup samweb prestage-dataset --defname=${DEFNAME} --parallel=100 --touch 2>&1 > ${log} &
 fi
 
 echo "ALL DONE!"
