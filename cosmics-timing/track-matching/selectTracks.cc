@@ -49,8 +49,8 @@ void selectTracks(
   )
 {
     
-  bool _LIMIT = false;
-  int _MAX_FILES = 100; 
+  bool _LIMIT = true;
+  int _MAX_FILES = 300; 
   double START_TRACK_Y = 125.;
   double END_TRACK_Y = -175.; 
   double PE_CUT = 50; 
@@ -263,18 +263,19 @@ void selectTracks(
              pmt_z.push_back(ophit.pmt.Z);
            }
       
-           // TODO FIXME: is this important?
+           // FIXME: is this important? removing it for now, pe cut is in python notebooks...
            // Ignore this match if there are no PMTs at the highest Y coordinate 
            // (might happen for rare case of misreconstruction or mistmatch)
-           // for( auto ophit : flash.ophits ){ 
-           //  if( ophit.pmt.Y > 80 )
-           //    selOpHits.push_back( ophit );
-           // }
-           // if( selOpHits.size() == 0 ){
+           /* std::vector< OpHit > selOpHits;
+           for( auto ophit : flash.ophits ){ 
+             if( ophit.pmt.Y > 80 && ophit.pmt_pe>300. ) // pe_cut was 300 before..
+               selOpHits.push_back( ophit );
+           }
+           if( selOpHits.size() == 0 ){
              // Match the flash only once 
-           //  flashes.erase( flashes.begin()+idx );
-           //  break;
-           // }
+             flashes.erase( flashes.begin()+idx );
+             break;
+           }*/
 
            // TODO FIXME: computing the mean time per y COULD here would make things easier!
            // however, it means a new ROOT file for every set of corrections...

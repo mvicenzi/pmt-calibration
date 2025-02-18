@@ -1,7 +1,7 @@
 export run=$1
 export stream=$2
 export odir="/exp/icarus/data/users/${USER}/pmt-calibration/input_caltuples"
-export version="v09_72_00_05p04"
+#export version="v09_72_00_05p04"
 
 #loop through files and save in list
 list="${odir}/files-caltuple-run${run}.list"
@@ -11,7 +11,15 @@ if test -f "$list"; then
 fi
 touch $list
 
-COND="run_number=${run} AND file_format=calib_ntuples AND data_stream=${stream} AND version=${version}"
+## FOR RUN-2 reprocessing
+COND="run_number=${run} AND file_format=calib_ntuples AND (dataset.tag=Icaruspro_2024_Run2_production_Reproc_Run2_v09_89_01_01p03_offbeambnbmajority_calibtuples OR dataset.tag=Icaruspro_2024_Run2_production_Reproc_Run2_v09_89_01_01p03_bnbmajority_calibtuples)"
+
+## FOR RUN-3 keepup processing
+#COND="run_number=${run} AND data_stream=offbeambnbmajority AND file_format=calib_ntuples AND dataset.tag=keepup_production_Run3_v09_90_00_calibtuples"
+
+## FOR run11816 processing
+#AND dataset.tag=Icaruspro_2024_Run3_11816_offbeambnbmajority_production_Data_Run3_11816_allPMT_v09_90_00_offbeambnbmajority_calibtuples" 
+#AND data_stream=${stream} AND version=${version}"
 
 prestage=0
 errors=0

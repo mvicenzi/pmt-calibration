@@ -41,8 +41,8 @@
 
 void selectTracks_oldFormat( 
     std::string const & run="8413",
-    std::string const & fileList="inputs/run8413_tracks_BNB_files.txt",
-    std::string const & outfilename="output/TEST_10us_5cm_run8413_matched_light_tracks.txt"
+    std::string const & fileList="/exp/icarus/data/users/mvicenzi/pmt-calibration/input_caltuples/files-caltuple-BNBMAJORITY-run8413.list",
+    std::string const & outfilename="/exp/icarus/data/users/mvicenzi/pmt-calibration/track_matches/run8413_BNBMAJORITY_matched_light_tracks.txt"
 ){
     bool _LIMIT = false;
     double MAX_DT_US = 10;
@@ -101,7 +101,7 @@ void selectTracks_oldFormat(
 
 
         // Read TPC Info
-        auto myTPCMap = readTPCInfo( chargeTTrees, tfile );
+        auto myTPCMap = readTPCInfo( chargeTTrees, tfile, 125., -175. );
 
         // Read the PMT Info
 	auto myPMTMap = readPMTInfo_oldFormat( lightTtrees, tfile, 300.);
