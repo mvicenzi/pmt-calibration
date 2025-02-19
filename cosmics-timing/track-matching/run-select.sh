@@ -8,12 +8,14 @@ export cosmicsdb="${path}/pmt_cosmics_timing_data"
 #export cfile="${cosmicsdb}/pmt_cosmics_timing_data_run09301_from9337.csv"
 #export lfile="${laserdb}/pmt_laser_timing_data_run09628_from9772.csv"
 #export cfile="${cosmicsdb}/pmt_cosmics_timing_data_run09628_from9730.csv"
-export lfile="${laserdb}/pmt_laser_timing_data_run09773_from9773.csv"
-export cfile="${cosmicsdb}/pmt_cosmics_timing_data_run09773_from10085.csv"
+#export lfile="${laserdb}/pmt_laser_timing_data_run09773_from9773.csv"
+#export cfile="${cosmicsdb}/pmt_cosmics_timing_data_run09773_from10085.csv"
 
 ## PRE-RUN3
-#export lfile="${laserdb}/pmt_laser_timing_data_run10908_from10982.csv"
-#export cfile="${cosmicsdb}/pmt_cosmics_timing_data_run09773_from10085.csv"
+#export lfile="${laserdb}/pmt_laser_timing_data_run09773_from9773.csv"
+#export cfile""
+export lfile="${laserdb}/pmt_laser_timing_data_run10908_from10982.csv"
+export cfile="${cosmicsdb}/pmt_cosmics_timing_data_run09773_from10085.csv"
 
 ## RUN-1
 #export lfile="${laserdb}/pmt_laser_timing_data_run08046_from8270-8304.csv"
