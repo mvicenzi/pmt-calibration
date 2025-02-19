@@ -1,9 +1,10 @@
-import uproot3 as uproot
+import uproot
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os, sys
 from scipy import stats
+from scipy.optimize import curve_fit
 from datetime import datetime
 import argparse
 
@@ -11,19 +12,42 @@ date = datetime.today().strftime('%Y%m%d')
 
 def loadSingleFile( tfile, treename, flatenndf=False ):
     ttree = uproot.open(tfile)
-    data = ttree[treename].arrays(outputtype=pd.DataFrame,flatten=flatenndf)
+    data = pd.DataFrame(ttree[treename].arrays(library="pd"))
     return data
 
 def getdiff( y, t):
     # max y is on top : cosmics are going towards decreasing y 
     return t[np.argmin(y)] - t[np.argmax(y)]
 
+# Define a linear model: t = intercept + slope * y
+def linear_model(x, intercept, slope):
+    return intercept + slope * x
+
 def fittime( y, t ):
+
+    if(len(y)<4 or len(t)<4):
+        print("Not enough data points for linear regression: y = %s, t = %s", y, t)
+        return 0,0
+    
+    # initial guess
+    y_range = np.max(y) - np.min(y)
+    slope0 = (np.max(t) - np.min(t)) / y_range if y_range !=0 else 0
+    intercept0 = np.median(t) - slope0 * np.median(y)
+    initp0 = [intercept0, slope0]
+
     try:
-        res= stats.linregress(y, t)
+
+        popt, _ = curve_fit(linear_model, y, t, p0=initp0)
+        return popt[0], popt[1]
+    
+        #old implementation...
+        #res= stats.linregress(y, t)
         #print( res.intercept, res.slope)
-        return res.intercept,  res.slope
-    except:
+        #print(res.pvalue)
+        #return res.intercept,  res.slope
+    
+    except Exception as e:
+        print(e)
         return 0,0
 
 def residuals( tobs, y, a, b ):
@@ -42,9 +66,10 @@ def main(args):
    
     RUN = int(args.run)
     PERIOD = args.period
+    PECUT = args.pecut
 
     PATH = "/exp/icarus/data/users/mvicenzi/pmt-calibration/track_matches/"
-    OUTPATH = "/exp/icarus/app/users/mvicenzi/pmt-calibration/cosmics-timing/residuals/output/" + PERIOD + "/"
+    OUTPATH = "/exp/icarus/data/users/mvicenzi/pmt-calibration/residualsdb/" + PERIOD + "/"
     COSMICSDB = "/exp/icarus/data/users/mvicenzi/timing-database/pmt_cosmics_timing_data/"
     LASERDB = "/exp/icarus/data/users/mvicenzi/timing-database/pmt_laser_timing_data/"
 
@@ -53,7 +78,8 @@ def main(args):
     APPLY_LASER = int(args.applylaser)
     APPLY_COSMICS = int(args.applycosmics)
     LASERCORR = LASERDB + args.laserfile
-    COSMICSCORR = OUTPATH + args.cosmicsfile
+    COSMICSCORR = COSMICSDB + args.cosmicsfile
+    #COSMICSCORR = OUTPATH + args.cosmicsfile
     
     suffix = "nocorr"
     if APPLY_LASER:
@@ -83,7 +109,7 @@ def main(args):
 
     lasercorr = pd.read_csv(LASERCORR, sep=r'\s*,\s*', engine='python')
     lasercorr = lasercorr.rename(columns={'channel': 'channel_id'})
-    lasercorr.set_index(["channel_id"])
+    lasercorr.set_index(["channel_id"], inplace=True)
     lasercorr["t_signal"] = lasercorr["t_signal"]/1e3  #convert ns to us
 
     df = df.join( lasercorr[["t_signal"]], on=["channel_id"])
@@ -112,9 +138,7 @@ def main(args):
     df = df.drop(columns=["t_signal"])
     df = df.drop(columns=["mean_residual_ns"])
     
-    _pecut=300
-
-    _sel = (df.pmt_pe > _pecut)
+    _sel = (df.pmt_pe > PECUT)
     meandf = df[_sel][["run", "event", "cryo", "flash_id", "pmt_time", "pmt_pe", "pmt_y"]].groupby(["run", "event", "cryo","flash_id", "pmt_y"]).apply( 
         lambda x : pd.Series( {
         "mean_time" : np.mean(x.pmt_time),
@@ -144,7 +168,6 @@ def main(args):
     #dfg = df.join( meandf[meandf.slope<0][["intercept", "slope"]], on=["run", "event", "cryo", "flash_id"], how='inner')
 
     # Keep only the residuals on relevant PMT for that event
-    PECUT = 300
     dfg = dfg[(dfg.pmt_pe>PECUT)]
     dfg.to_csv("output/dump_run{}_test.csv".format(RUN))
     
@@ -207,6 +230,7 @@ if __name__ == "__main__":
     args.add_argument("-c", "--applycosmics", default=False)
     args.add_argument("-f", "--laserfile", default="")
     args.add_argument("-g", "--cosmicsfile", default="")
+    args.add_argument("-t", "--pecut", default="")
 
     main(args.parse_args())
 
