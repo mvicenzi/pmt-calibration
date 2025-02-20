@@ -20,6 +20,8 @@ For the job submission, the relevant scripts are the following:
 * [fit-histograms.sh](fit-histograms.sh): it fits the integrated charge distribution for each PMT channel to extract the gain.
    These values, their error and other fit parameters are saved in a `.csv` file.
    Several options can be specified via input parameters.
+* [fix-bad-fits.sh](fix-bad-fits.sh): it allows to replace single rows in the output `.csv` file from a "correction" file.
+   The fitting procedure applies the same fit constraints to all channels, but some may need individual settings to converge.
 
 The fitted gains are saved as `/exp/icarus/data/users/${USERS}/pmt-calibration/calibrationdb/backgroundphotons_run${run}_{timestamp}.csv`.
 The timestamp is taken from the first event in the run and it can be used to tag the gain measurement in time.

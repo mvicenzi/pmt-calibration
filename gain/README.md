@@ -1,3 +1,8 @@
+## Gain estimation
+Gain is estimated from data using single-photoelectrons hits (so called _background photons_).
+These hits are extracted from the offbeam mininum bias data stream, using the [PMTBackgroundphotonsCalibration](https://github.com/SBNSoftware/icaruscode/blob/develop/icaruscode/PMT/Calibration/PMTBackgroundphotonsCalibration_module.cc) module.
+Configuration files and supporting scripts for the estimation are collected in the [analyze_runs](./analyze_runs) subdirectory.
+
 ## Gain calibration
 The gain calibration for the PMTs follows these steps:
 
