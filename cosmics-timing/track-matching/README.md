@@ -7,14 +7,14 @@ The code is flexible enough to be able to add/remove previously-applied laser or
 1. Start by building a list of calibration ntuples filepaths. Several scripts (`make-list-caltuple*.sh`) are available to do this task.
    Unfortunately, file management has been pretty messy in the past and there is no unique way to get the calib_ntuples you need via `samweb`.
    Take a look and the query and make sure to adjust it to your needs.
-** It is very important that you have control on the input sample: do not mix calibration ntuples produced with different software releases!
-2. Calibration ntuples will most likely already include some timing corrections (possibly incorrectly applied).
+   * It is very important that you have control on the input sample: do not mix calibration ntuples produced with different software releases!
+3. Calibration ntuples will most likely already include some timing corrections (possibly incorrectly applied).
    Put on you Sherlock Holmes hat and dig into the `icaruscode` release that produced the files and check which corrections were applied.
    Depending on what you want to do, you might have to remove them before processing.
-** Note: if the `pmt_cables_delays_data` table used is wrong, you'll most likely need to find a new set of ntuples.
+   * Note: if the `pmt_cables_delays_data` table used is wrong, you'll most likely need to find a new set of ntuples.
    There is no clean/easy way to remove these without re-running the flash matching, so the current code doesn't support it.  
    It's not impossible, but do not attempt it unless you have no other way.
-3. Run the track selection macro (`selectTracks.cc`) via `run-select.sh`.
+5. Run the track selection macro (`selectTracks.cc`) via `run-select.sh`.
    Take note of the settings inside the script: tipically you want to remove all previously-applied laser/cosmics corrections.
    You will be able to re-apply any correction you want while extracting the residuals, so it's better to remove all of them here.  
    The macro takes the following inputs:
