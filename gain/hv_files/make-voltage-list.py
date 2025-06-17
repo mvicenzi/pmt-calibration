@@ -3,7 +3,15 @@ import sys, os
 import sqlite3
 import pandas as pd
 
-def readSqlitedb(database="/cvmfs/icarus.opensciencegrid.org/products/icarus/icarus_data/v09_79_01/icarus_data/database/ChannelMapICARUS_20230829.db",table="pmt_placements_29aug2023"):
+def readSqlitedb(date, database="/cvmfs/icarus.opensciencegrid.org/products/icarus/icarus_data/v09_79_01/icarus_data/database/ChannelMapICARUS_20230829.db"):
+
+    table = "pmt_placements"
+    if int(date) >= 20230823:
+        table = "pmt_placements_23aug2023"
+    elif int(date) >= 20230829:
+        table = "pmt_placements_29aug2023"
+
+    print(date, table)
 
     # Read sqlite query results into a pandas DataFrame
     con = sqlite3.connect(database)
@@ -12,9 +20,9 @@ def readSqlitedb(database="/cvmfs/icarus.opensciencegrid.org/products/icarus/ica
 
     return df
 
-def PMTid_to_channel(pmt_ids):
+def PMTid_to_channel(date,pmt_ids):
     
-    geo = readSqlitedb()
+    geo = readSqlitedb(date)
     
     if np.isscalar(pmt_ids):
         channel = geo[geo.pmt_id==pmt_ids].channel_id.values[0]
@@ -30,7 +38,8 @@ def load_hv(filename, voltages):
     """
     Makes a dictionary with key the channelId and as value the voltage set
     """
-    geo = readSqlitedb()
+    date = filename.split("_")[1]
+    geo = readSqlitedb(date)
 
     for line in open(filename, "r"):
 
@@ -56,7 +65,10 @@ def main():
 		sys.exit()
 
 	oldfilename = args[1]
-	nfp = open("voltage_list.csv", "w")
+	prefile = oldfilename.split("_")
+	newfile = "pmt_voltage_data_" + prefile[1] + ".csv"
+	
+	nfp = open(newfile, "w")
 
 	voltages = {}
 	load_hv(oldfilename,voltages)
