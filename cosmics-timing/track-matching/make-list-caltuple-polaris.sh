@@ -1,10 +1,7 @@
 export run=$1
-export stream=$2
 export odir="/exp/icarus/data/users/${USER}/pmt-calibration/input_caltuples"
-export version="v09_78_06"
 
 #loop through files and save in list
-#list="${odir}/files-caltuple-run${run}.list"
 list="${odir}/files-caltuple-all-run${run}.list"
 if test -f "$list"; then
     echo "$list exists. Removing old list"
@@ -12,21 +9,20 @@ if test -f "$list"; then
 fi
 touch $list
 
-## FOR RUN-2 reprocessing
-COND="run_number=${run} AND file_format=calib_ntuples AND (dataset.tag=Icaruspro_2024_Run2_production_Reproc_Run2_v09_89_01_01p03_offbeambnbmajority_calibtuples OR dataset.tag=Icaruspro_2024_Run2_production_Reproc_Run2_v09_89_01_01p03_bnbmajority_calibtuples OR dataset.tag=Icaruspro_2024_Run2_production_Reproc_Run2_v09_89_01_01p03_offbeamnumimajority_calibtuples OR dataset.tag=Icaruspro_2024_Run2_production_Reproc_Run2_v09_89_01_01p03_numimajority_calibtuples OR dataset.tag=Icaruspro_2024_Run2_production_Reproc_Run2_v09_89_01_01p03_offbeambnbminbias_calibtuples OR dataset.tag=Icaruspro_2024_Run2_production_Reproc_Run2_v09_89_01_01p03_bnbminbias_calibtuples OR dataset.tag=Icaruspro_2024_Run2_production_Reproc_Run2_v09_89_01_01p03_offbeamnumiminbias_calibtuples OR dataset.tag=Icaruspro_2024_Run2_production_Reproc_Run2_v09_89_01_01p03_numiminbias_calibtuples)"
+## FOR RUN-4 reprocessing
+DEF1="Icaruspro_2025_wcdnn_production_Run4_SBN_v10_06_00_01p05_fstrmOffBeamBNBMAJORITY_calib_ntuples"
+#DEF2="Icaruspro_2025_wcdnn_production_Run4_SBN_v10_06_00_01p05_fstrmBNBMAJORITY_calib_ntuples"
 
-## FOR RUN-3 keepup processing
-#COND="run_number=${run} AND data_stream=offbeambnbmajority AND file_format=calib_ntuples AND dataset.tag=keepup_production_Run3_v09_90_00_calibtuples"
-
-## FOR run11816 processing
-#AND dataset.tag=Icaruspro_2024_Run3_11816_offbeambnbmajority_production_Data_Run3_11816_allPMT_v09_90_00_offbeambnbmajority_calibtuples" 
-
-#COND="run_number=${run} and file_format=calib_ntuples AND version=${version} with limit 300"
+files=$( 
+  samweb list-definition-files $DEF1 | grep ${run}
+)
+#  samweb list-definition-files $DEF2 | grep ${run}
+#)
 
 prestage=0
 errors=0
 id=0
-for file in $( samweb list-files ${COND} )
+for file in $files
 do
 	#echo $id $file
         samwebLocFull=$(samweb locate-file $file | head -n 1 )
@@ -70,7 +66,7 @@ thr=$(echo "$njobs" | awk '{printf "%d", 0.01*$1}')
 if ((prestage > thr)); then
 	echo "Prestaging files..." 
 	echo "This can take a long time, but you can close this terminal & check status on webpage!"
-	nohup samweb prestage-dataset --defname=${DEFNAME} --touch > ${log} 2>&1 &
+	#nohup samweb prestage-dataset --defname=${DEFNAME} --touch > ${log} 2>&1 &
 fi
 
 echo "ALL DONE!"
