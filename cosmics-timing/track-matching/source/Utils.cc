@@ -267,7 +267,7 @@ std::map<int, std::vector<Track>>
             TTreeReaderValue<int>   runTPC(myReaderTPC, "meta.run"); 
             TTreeReaderValue<int>   eventTPC(myReaderTPC, "meta.evt"); 
             TTreeReaderValue<float> startz(myReaderTPC, "start.z"); 
-            TTreeReaderValue<float> t0(myReaderTPC, "t0"); 
+            TTreeReaderValue<float> t0(myReaderTPC, "t0PFP"); 
             TTreeReaderValue<float> endz(myReaderTPC, "end.z"); 
             TTreeReaderValue<float> length(myReaderTPC, "length");
             TTreeReaderValue<float> startx(myReaderTPC, "start.x");

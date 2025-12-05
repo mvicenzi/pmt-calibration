@@ -8,7 +8,7 @@ def readSqlitedb(date, database="/cvmfs/icarus.opensciencegrid.org/products/icar
     table = "pmt_placements"
     if int(date) >= 20230823:
         table = "pmt_placements_23aug2023"
-    elif int(date) >= 20230829:
+    if int(date) >= 20230829:
         table = "pmt_placements_29aug2023"
 
     print(date, table)
@@ -38,7 +38,7 @@ def load_hv(filename, voltages):
     """
     Makes a dictionary with key the channelId and as value the voltage set
     """
-    date = filename.split("_")[1]
+    date = filename.split("_")[1].rstrip(".sub")
     geo = readSqlitedb(date)
 
     for line in open(filename, "r"):
@@ -66,14 +66,14 @@ def main():
 
 	oldfilename = args[1]
 	prefile = oldfilename.split("_")
-	newfile = "pmt_voltage_data_" + prefile[1] + ".csv"
+	newfile = "pmt_voltage_data_" + prefile[1].rstrip(".sub") + ".csv"
 	
 	nfp = open(newfile, "w")
 
 	voltages = {}
 	load_hv(oldfilename,voltages)
 	
-	nfp.write("channel_id,voltage,on\n")
+	nfp.write("channel_id,voltage,status\n")
 	for ch, v, in voltages.items():
 		on = 1
 		if (v < 1):

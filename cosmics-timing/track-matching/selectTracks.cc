@@ -50,7 +50,7 @@ void selectTracks(
 {
     
   bool _LIMIT = true;
-  int _MAX_FILES = 300; 
+  int _MAX_FILES = 4000; 
   double START_TRACK_Y = 125.;
   double END_TRACK_Y = -175.; 
   double PE_CUT = 50; 
@@ -217,7 +217,7 @@ void selectTracks(
          bool selPosition = fabs(track.chargeCenter.Z-flash.flashZ)<MAX_DZ_CM;
          bool selTiming   = (track.T0/1000.-flash.time)>0 && (track.T0/1000.-flash.time)<MAX_DT_US;
 
-         if( selPosition && selTiming && selCryo ) {
+	 if( selPosition && selTiming && selCryo ) {
   
            // clear vectors from the previous match
            channel_id.clear();

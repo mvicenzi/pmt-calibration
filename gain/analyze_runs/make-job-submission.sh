@@ -51,7 +51,7 @@ echo "<!-- Larsoft information -->           " >> $xml
 echo "<larsoft>                              " >> $xml
 echo "  <tag>&release;</tag>                 " >> $xml
 echo "  <qual>e26:prof</qual>                " >> $xml
-echo "  <local>/pnfs/icarus/scratch/users/mvicenzi/icaruscode_v09_89_01_01_gaincalibration_ingate.tar</local> " >> $xml
+echo "  <local>/pnfs/icarus/persistent/users/mvicenzi/tars/icaruscode_v09_89_01_01_gaincalibration_ingate.tar</local> " >> $xml
 echo "</larsoft>                             " >> $xml
 
 echo "<!-- Project stages -->                " >> $xml

@@ -2,7 +2,7 @@ export run=$1
 export odir="/exp/icarus/data/users/${USER}/pmt-calibration/input_caltuples"
 
 #loop through files and save in list
-list="${odir}/files-caltuple-all-run${run}.list"
+list="${odir}/files-caltuple-run${run}.list"
 if test -f "$list"; then
     echo "$list exists. Removing old list"
     rm $list
