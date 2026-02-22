@@ -12,7 +12,7 @@ date = datetime.today().strftime('%Y%m%d')
 
 def loadSingleFile( tfile, treename, flatenndf=False ):
     ttree = uproot.open(tfile)
-    data = pd.DataFrame(ttree[treename].arrays(library="pd"))
+    data = pd.DataFrame(ttree[treename].arrays(library="np"))
     return data
 
 def getdiff( y, t):
@@ -27,7 +27,7 @@ def fittime( y, t ):
 
     if(len(y)<4 or len(t)<4):
         print("Not enough data points for linear regression: y = %s, t = %s", y, t)
-        return 0,0
+        return 0,0,0
     
     # initial guess
     y_range = np.max(y) - np.min(y)
@@ -38,7 +38,7 @@ def fittime( y, t ):
     try:
 
         popt, _ = curve_fit(linear_model, y, t, p0=initp0)
-        return popt[0], popt[1]
+        return popt[0], popt[1], 1
     
         #old implementation...
         #res= stats.linregress(y, t)
@@ -47,8 +47,8 @@ def fittime( y, t ):
         #return res.intercept,  res.slope
     
     except Exception as e:
-        print(e)
-        return 0,0
+        print("Fitting failed:", e)
+        return 0,0,0
 
 def residuals( tobs, y, a, b ):
     return tobs -  ( a + b*y )
@@ -66,14 +66,25 @@ def main(args):
    
     RUN = int(args.run)
     PERIOD = args.period
-    PECUT = args.pecut
+    PECUT = float(args.pecut)
+    PMT_TIME_FIELD = args.timing_field
+    TRACK_TYPE = args.track_type
+    RESIDUAL_RANGE = float(args.residual_range)
+
+    # Determine timing definition for filename
+    TDEF = "rise"
+    if "start" in PMT_TIME_FIELD:
+        TDEF = "start"
 
     PATH = "/exp/icarus/data/users/mvicenzi/pmt-calibration/track_matches/"
     OUTPATH = "/exp/icarus/data/users/mvicenzi/pmt-calibration/residualsdb/" + PERIOD + "/"
-    COSMICSDB = "/exp/icarus/data/users/mvicenzi/timing-database/pmt_cosmics_timing_data/"
-    LASERDB = "/exp/icarus/data/users/mvicenzi/timing-database/pmt_laser_timing_data/"
+    COSMICSDB = "/exp/icarus/data/users/mvicenzi/pmt-database/pmt_cosmics_timing_data/"
+    LASERDB = "/exp/icarus/data/users/mvicenzi/pmt-database/pmt_laser_timing_data/"
 
-    FILENAME = PATH + "run{}_matched_light_tracks.root".format(RUN)
+    if TRACK_TYPE:
+        FILENAME = PATH + "run{}_matched_light_tracks_{}.root".format(RUN, TRACK_TYPE)
+    else:
+        FILENAME = PATH + "run{}_matched_light_tracks.root".format(RUN)
 
     APPLY_LASER = int(args.applylaser)
     APPLY_COSMICS = int(args.applycosmics)
@@ -87,7 +98,10 @@ def main(args):
     if APPLY_LASER and APPLY_COSMICS:
         suffix = "lasercosmics"
 
-    OUTFILE = OUTPATH + "run{}_residuals_{}.csv".format(RUN,suffix)
+    if TRACK_TYPE:
+        OUTFILE = OUTPATH + "run{}_residuals_{}_{}_{}.csv".format(RUN, TDEF, TRACK_TYPE, suffix)
+    else:
+        OUTFILE = OUTPATH + "run{}_residuals_{}_{}.csv".format(RUN, TDEF, suffix)
     
     print("Reading {}".format(FILENAME))
 
@@ -101,7 +115,7 @@ def main(args):
     print("Considering {} track-flash matches".format( len(df) ) )
 
     ## Explode the dataframe 
-    df = df.explode(["pmt_time", "pmt_x", "pmt_y", "pmt_pe", "pmt_z", "pmt_amplitude","channel_id"])
+    df = df.explode(["pmt_time_start", "pmt_time_rise", "pmt_x", "pmt_y", "pmt_pe", "pmt_z", "pmt_amplitude","channel_id"])
 
     ## Import and use laser correction
     ## WARNING: DO NOT USE IF CORRECTIONS WERE ALREADY APPLIED AT PREVIOUS STAGES
@@ -116,7 +130,7 @@ def main(args):
 
     if APPLY_LASER:
         print("Applying laser corrections from {}...".format(LASERCORR))
-        df['pmt_time'] = df['pmt_time'] - df['t_signal']  #CURRENTLY ADDING LASER CORRECTIONS!
+        df[PMT_TIME_FIELD] = df[PMT_TIME_FIELD] - df['t_signal']  #CURRENTLY ADDING LASER CORRECTIONS!
         
         
     ## Import and use cosmic corrections
@@ -132,44 +146,50 @@ def main(args):
 
     if APPLY_COSMICS:
         print("Applying cosmics corrections from {}...".format(COSMICSCORR))
-        df['pmt_time'] = df['pmt_time'] - df['mean_residual_ns']  #CURRENTLY ADDING COSMICS CORRECTIONS!    
+        df[PMT_TIME_FIELD] = df[PMT_TIME_FIELD] - df['mean_residual_ns']  #CURRENTLY ADDING COSMICS CORRECTIONS!    
         
     # drop unneed columns
     df = df.drop(columns=["t_signal"])
     df = df.drop(columns=["mean_residual_ns"])
     
     _sel = (df.pmt_pe > PECUT)
-    meandf = df[_sel][["run", "event", "cryo", "flash_id", "pmt_time", "pmt_pe", "pmt_y"]].groupby(["run", "event", "cryo","flash_id", "pmt_y"]).apply( 
+    meandf = df[_sel][["run", "event", "cryo", "flash_id", PMT_TIME_FIELD, "pmt_pe", "pmt_y"]].groupby(["run", "event", "cryo","flash_id", "pmt_y"]).apply( 
         lambda x : pd.Series( {
-        "mean_time" : np.mean(x.pmt_time),
-        "weight_mean_time" : np.average(x.pmt_time, weights=x.pmt_pe), 
-        "error_mean_time": np.std(x.pmt_time) / np.sqrt(len(x.pmt_time)),
+        "mean_time" : np.mean(x[PMT_TIME_FIELD]),
+        "weight_mean_time" : np.average(x[PMT_TIME_FIELD], weights=x.pmt_pe), 
+        "error_mean_time": np.std(x[PMT_TIME_FIELD]) / np.sqrt(len(x[PMT_TIME_FIELD])),
     }) ).reset_index()
 
     meandf = meandf.groupby(["run", "event", "cryo", "flash_id"]).agg(list)
 
     print("PE cut leaves {} tracks".format( len(meandf) ))
     
-    N = 4 # minimum number of quotas available for a good fit (at least 1 pmt >300 PE in each) 
+    N = 4 # minimum number of quotas available for a good fit (at least 1 pmt >300 PE in each)
+    MIN_MEASUREMENTS_PER_QUOTA = 2  # Average measurements per quota
     meandf = meandf[meandf["pmt_y"].apply(lambda x: isinstance(x, (list, np.ndarray)) and len(x) >= N)]
 
     print("Minimum quotas cut leaves {} tracks".format( len(meandf ) ))
     
-    meandf["diff_time"] = meandf.apply( lambda x : getdiff( x.pmt_y, x.mean_time ), axis=1 ) 
-    meandf[["intercept", "slope"]] = meandf.apply(lambda x : fittime(x.pmt_y, x.mean_time ), axis=1, result_type="expand" )
+    # Filter fits by average measurements per quota
+    meandf = meandf[meandf.apply(lambda x: len(x.mean_time) / len(x.pmt_y) >= MIN_MEASUREMENTS_PER_QUOTA if isinstance(x.pmt_y, (list, np.ndarray)) else False, axis=1)]
+    
+    print("Minimum measurements per quota cut leaves {} tracks".format( len(meandf ) )) 
+    meandf[["intercept", "slope", "status"]] = meandf.apply(lambda x : fittime(x.pmt_y, x.mean_time ), axis=1, result_type="expand" )
     
     # Putting fit back in the exploded dataframe, then compute the residual
     # This should work for every channel_id
     # this is using all slopes, including possible "negative" ones
-    dfg = df.join( meandf[["intercept", "slope"]], on=["run", "event", "cryo", "flash_id"], how='inner')
-    dfg["residuals"] = dfg.apply( lambda x : residuals(x.pmt_time, x.pmt_y, x.intercept, x.slope), axis=1 ) 
+    dfg = df.join( meandf[["intercept", "slope", "status"]], on=["run", "event", "cryo", "flash_id"], how='inner')
 
     # TEST: only positive slopes
     #dfg = df.join( meandf[meandf.slope<0][["intercept", "slope"]], on=["run", "event", "cryo", "flash_id"], how='inner')
 
+    dfg["residuals"] = dfg.apply( lambda x : residuals(x[PMT_TIME_FIELD], x.pmt_y, x.intercept, x.slope), axis=1 ) 
+
     # Keep only the residuals on relevant PMT for that event
-    dfg = dfg[(dfg.pmt_pe>PECUT)]
-    dfg.to_csv("output/dump_run{}_test.csv".format(RUN))
+    # also rejects events with residuals outside the specified range
+    dfg = dfg[(dfg.pmt_pe>PECUT) & (dfg.status>0) & (dfg.residuals<RESIDUAL_RANGE) & (dfg.residuals>-RESIDUAL_RANGE)]
+    dfg.to_csv("dumps/dump_run{}_{}_{}.csv".format(RUN, TDEF, suffix))
     
     print("Flash-tracks used for the computation of residuals: {}".format( len(dfg.groupby(["run", "event", "cryo", "flash_id"])) ) )
     
@@ -181,12 +201,15 @@ def main(args):
             'x': np.mean(x.pmt_x),
             'y': np.mean(x.pmt_y),
             'z': np.mean(x.pmt_z),
-            'entries' : len(x.residuals), 
+            'entries' : int(len(x.residuals)), 
             'pecut' : PECUT,
             'mean_residual_ns' : np.mean(x.residuals)*us_to_ns,
+            'median_residual_ns' : np.median(x.residuals)*us_to_ns,
             'std_residual_ns' : np.std(x.residuals)*us_to_ns,
             'emean_ns' : np.std(x.residuals)*us_to_ns/len(x.residuals)
         })).reset_index()
+    
+    thisdfg['entries'] = thisdfg['entries'].astype(int)
     
     print("Saving residuals to {}...".format(OUTFILE))
     thisdfg.to_csv(OUTFILE, index=False, float_format='%.4f')
@@ -216,7 +239,6 @@ def main(args):
     addf = pd.DataFrame(dictionary)
     rdf = pd.concat([rdf,addf], ignore_index=True)
     rdf.sort_values(by="channel_id", inplace=True)
-    thisdfg.to_csv(OUTFILE, index=False, float_format='%.4f')
     
     rdf.to_csv(OUTFILE, index=False, float_format='%.4f')
 
@@ -230,7 +252,10 @@ if __name__ == "__main__":
     args.add_argument("-c", "--applycosmics", default=False)
     args.add_argument("-f", "--laserfile", default="")
     args.add_argument("-g", "--cosmicsfile", default="")
-    args.add_argument("-t", "--pecut", default="")
+    args.add_argument("-t", "--pecut", default="150")
+    args.add_argument("--timing-field", default="pmt_time_start", help="PMT timing field: 'pmt_time_start' or 'pmt_time_rise'")
+    args.add_argument("--track-type", default="", help="Track type suffix (e.g., 'STD')")
+    args.add_argument("--residual-range", default="1.0", help="Residual outlier range in microseconds (default: 1.0)")
 
     main(args.parse_args())
 
