@@ -173,7 +173,7 @@ void process_flashes(TChain *t, std::string name){
 
 			if( histos.find(ch) == histos.end()){ //first time
 				std::string hn = "h" + std::to_string(ch);
-				std::string ht = "thit - tflash for ch " + std::to_string(ch);
+				std::string ht = "Channel " + std::to_string(ch);
 				TH1F *h = new TH1F(hn.c_str(),ht.c_str(),100,-0.05,0.15);
 				h->Fill(tdiff);
 				histos[ch] = h;
@@ -210,10 +210,16 @@ void saveToPdf(TH1F* hist, const std::string& pdfname) {
     hist->SetLineColor(kBlue + 1);
     hist->SetLineWidth(2);
     hist->Draw();
+    hist->GetXaxis()->SetTitle("Hit start time - flash time [us]");
+    hist->GetYaxis()->SetTitle("# of flashes");
+    hist->SetStats(0);
 
     double mean = hist->GetMean();
     double median = getMedian(hist);
-    double ymax = 1.2 * hist->GetMaximum();
+    
+    gPad->Update();
+    double ymax = gPad->GetUymax();
+    //double ymax = 1.0 * hist->GetMaximum();
 
     // --- Mean and Median lines (red) ---
     TLine *lMean = new TLine(mean, 0, mean, ymax);
@@ -223,10 +229,18 @@ void saveToPdf(TH1F* hist, const std::string& pdfname) {
     lMean->Draw("SAME");
 
     TLine *lMedian = new TLine(median, 0, median, ymax);
-    lMedian->SetLineColor(kGreen);
+    lMedian->SetLineColor(kBlack);
     lMedian->SetLineWidth(2);
     lMedian->SetLineStyle(9);
     lMedian->Draw("SAME");
+
+    // --- Legend ---
+    TLegend *leg = new TLegend(0.65, 0.7, 0.88, 0.88); // (x1,y1,x2,y2) in NDC
+    //leg->SetBorderSize(0);
+    //leg->SetFillStyle(0);
+    leg->AddEntry(lMean, Form("Mean = %.3f", mean), "l");
+    leg->AddEntry(lMedian, Form("Median = %.3f", median), "l");
+    leg->Draw();
 
     // --- Add to PDF ---
     c->Print(pdfname.c_str(), "pdf");

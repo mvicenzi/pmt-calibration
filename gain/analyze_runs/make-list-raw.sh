@@ -72,7 +72,7 @@ do
     	fi
 
 	echo "$id: $( samweb get-file-access-url --schema=root $file | head -n 1 )"
-	echo $( samweb get-file-access-url --schema=root $file | head -n 1 ) >> $list  
+	echo "$( samweb get-file-access-url --schema=root $file | head -n 1 )" >> $list
 	((id++))
 done 
 
@@ -86,7 +86,7 @@ thr=$(echo "$njobs" | awk '{printf "%d", 0.01*$1}')
 if ((prestage > thr)); then
 	echo "Prestaging files..." 
 	echo "This can take a long time, but you can close this terminal & check status on webpage!"
-	nohup samweb prestage-dataset --defname=${DEFNAME} --parallel=100 --touch 2>&1 > ${log} &
+	nohup samweb prestage-dataset --defname=${DEFNAME} --parallel=5 --touch 2>&1 > ${log} &
 fi
 
 echo "ALL DONE!"

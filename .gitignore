@@ -8,4 +8,5 @@
 *.svg
 .ipynb_checkpoints/
 __pycache__/
+cosmics-timing/residuals/old/*
 obj/

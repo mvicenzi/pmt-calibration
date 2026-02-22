@@ -23,11 +23,13 @@ export cosmicsdb="${path}/pmt_cosmics_timing_data"
 
 ## RUN-4
 export lfile="${laserdb}/pmt_laser_timing_data_run12837_from12838.csv"
-export cfile="${cosmicsdb}/pmt_cosmics_timing_data_run11590_from12014.csv"
+#export cfile="${cosmicsdb}/pmt_cosmics_timing_data_run11590_from12014.csv"
+export cfile="${cosmicsdb}/pmt_cosmics_timing_data_run12837_from12970.csv"
 
 export remove=1
 export add=0
 
 command="selectTracks.cc(\"${run}\",$remove,\"${lfile}\",\"${cfile}\",$add,\"\",\"\")"
+#command="selectTracks.cc(\"${run}\",$remove,\"\",\"${cfile}\",$add,\"\",\"\")"
 
 root -l loadLib.cc $command
